@@ -1,0 +1,29 @@
+{
+  "onboarding": [
+      {
+          "title": "Welcome to AutoMart!",
+          "paragraph": "Whether you’re looking to buy, sell, or advertise your car, AutoMart is here to make the process easy and efficient. Start your journey with us today.",
+          "image": "assets/images/1.png"
+      },
+      {
+          "title": "Buy Your Dream Car",
+          "paragraph": "Browse through a wide selection of vehicles. Find the perfect car that fits your needs and budget. We’re here to help you every step of the way.",
+          "image": "assets/images/2.png"
+      },
+      {
+          "title": "Sell with Ease",
+          "paragraph": "Ready to sell your car? List it on AutoMart and reach thousands of potential buyers. Our platform makes it simple and quick to get the best deal.",
+          "image": "assets/images/3.png"
+      },
+      {
+          "title": "Advertise Your Car",
+          "paragraph": "Maximize your car’s visibility with our advertising tools. Stand out from the crowd and attract serious buyers by showcasing your car in the best light.",
+          "image": "assets/images/4.png"
+      },
+      {
+          "title": "Get Started Today",
+          "paragraph": "Join the AutoMart community and experience the easiest way to buy, sell, and advertise cars. Your next great car deal is just a few clicks away!",
+          "image": "assets/images/5.png"
+      }
+  ]
+}

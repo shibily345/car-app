@@ -1,0 +1,191 @@
+
+{
+  "@@locale": "en",
+  "language":"English",
+  "@language":{
+    "description": "The current Language"
+  },
+  "appTitle": "HabitOn",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "welcome": "Welcome!",
+  "@welcome": {
+    "description": "The greeting to the application"
+  },
+  "tagLine": "Create Habits That Stick, See Results That Shine.",
+  "@tagLine": {
+    "description": "default line"
+  },
+  "notCompleted": "Not Completed",
+  "@notCompleted": {
+    "description": "filter not completed"
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "default line"
+  },
+  "notToday": "Not Today",
+  "@notToday": {
+    "description": "default line"
+  },
+  "all": "All",
+  "@all": {
+    "description": "default line"
+  },
+  "streak": "Streak",
+  "@streak": {
+    "description": "Label for the current streak"
+  },
+  "currentStreak": "Your current streak",
+  "@currentStreak": {
+    "description": "Description for the user's current streak"
+  },
+  "habitFinished": "Habit\nFinished",
+  "@habitFinished": {
+    "description": "Label for the completed habit count"
+  },
+  "completionRate": "Completion\nRate",
+  "@completionRate": {
+    "description": "Label for the habit completion rate"
+  },
+  
+    "times": "{value} Times",
+    "@times": {
+      "description": "Finished Times",
+      "placeholders": {
+        "value": {
+          "type": "String"
+        }
+      }
+    },
+    
+    "today": "Today: {count}",
+    "@today": {
+      "description": "Number of actions completed today",
+      "placeholders": {
+        "count": {
+          "type": "String"
+        }
+      }
+    },
+  
+    "percentage": "{roundedValue} %",
+    "@percentage": {
+      "description": "Percentage value",
+      "placeholders": {
+        "roundedValue": {
+          "type": "String"
+        }
+      }
+    },
+  
+    "habitProgress": "{doneDates}/{needToDone} Habit",
+    "@habitProgress": {
+      "description": "Habit progress showing completed habits out of total required",
+      "placeholders": {
+        "doneDates": {
+          "type": "String"
+        },
+        "needToDone": {
+          "type": "String"
+        }
+      }
+    },
+  
+    "successToday": "Successfully Completed Today",
+    "@successToday": {
+      "description": "Message indicating successful completion for today"
+    },
+  
+    "doneToday": "Done {count}/{repeatPerDay}",
+    "@doneToday": {
+      "description": "Shows how many times the habit is done today out of required repetitions",
+      "placeholders": {
+        "count": {
+          "type": "String"
+        },
+        "repeatPerDay": {
+          "type": "String"
+        }
+      }
+    },
+  
+    "reminders": "Reminders",
+    "@reminders": {
+      "description": "Label for reminders section"
+    },
+  
+    "noTimesSelected": "No times selected",
+    "@noTimesSelected": {
+      "description": "Message indicating no times were selected"
+    },
+  
+    "calendar": "Calendar",
+    "@calendar": {
+      "description": "Label for the calendar"
+    },
+    "yourHabitStatistics": "Your Habit Statistics",
+  "@yourHabitStatistics": {
+    "description": "Title for the habit statistics section"
+  },
+
+  "completionStats": "{completionStats}   Completed   ",
+  "@completionStats": {
+    "description": "Completion stats for a specific day",
+    "placeholders": {
+      "completionStats": {
+        "type": "String"
+      }
+    }
+  },
+
+  "startNewHabit": "Start a new habit!",
+  "@startNewHabit": {
+    "description": "Call to action to start a new habit"
+  },
+  "languagen": "Language",
+  "@languagen": {
+    "description": "Label for language selection"
+  },
+
+  "logOut": "Log Out",
+  "@logOut": {
+    "description": "Button or link to log out"
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Label for the settings section"
+  },
+
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Prompt to select a language"
+  },
+
+  "confirmLogout": "Confirm Logout",
+  "@confirmLogout": {
+    "description": "Confirmation prompt for logging out"
+  },
+
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirmation button label"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Label for theme selection"
+  },
+
+  "selectTheme": "Select Theme",
+  "@selectTheme": {
+    "description": "Title for the theme selection dialog"
+  }
+  
+}
+
+
+
+
+

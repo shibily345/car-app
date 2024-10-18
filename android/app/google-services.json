@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "404251449019",
+    "project_id": "car-dealer-79caa",
+    "storage_bucket": "car-dealer-79caa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:404251449019:android:0eaae62e58e6c7744c3b9e",
+        "android_client_info": {
+          "package_name": "com.example.car_app_beta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLvOmhdCe125AW8ZuM5v2po_QSZ7v0Q3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

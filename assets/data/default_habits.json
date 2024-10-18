@@ -1,0 +1,40 @@
+{
+  "habits": [
+    {
+      "name": "Morning Exercise",
+      "image": "assets/images/habits/1.png",
+      "days": ["Monday", "Wednesday", "Friday"],
+      "time_to_complete": "07:00 AM"
+    },
+    {
+      "name": "Read a Book",
+      "image": "assets/images/habits/2.png",
+      "days": ["Tuesday", "Thursday"],
+      "time_to_complete": "08:00 PM"
+    },
+    {
+      "name": "Meditation",
+      "image": "assets/images/habits/3.png",
+      "days": ["Everyday"],
+      "time_to_complete": "06:30 AM"
+    },
+    {
+      "name": "Drink Water",
+      "image": "assets/images/habits/4.png",
+      "days": ["Everyday"],
+      "time_to_complete": "09:00 AM"
+    },
+    {
+      "name": "Walk",
+      "image": "assets/images/habits/5.png",
+      "days": ["Monday", "Tuesday", "Thursday", "Saturday"],
+      "time_to_complete": "06:00 PM"
+    },
+    {
+      "name": "New Habit",
+      "image": "assets/images/4.png",
+      "days": ["Monday", "Tuesday", "Thursday", "Saturday"],
+      "time_to_complete": "06:00 PM"
+    }
+  ]
+}
