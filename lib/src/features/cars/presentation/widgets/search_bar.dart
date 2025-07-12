@@ -10,8 +10,8 @@ class CustomeSearchBar extends StatelessWidget {
         filled: true,
         fillColor: Colors.white,
         hintText: 'Search something...',
-        prefixIcon: Icon(Icons.search, color: Colors.grey),
-        contentPadding: EdgeInsets.all(8),
+        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+        contentPadding: const EdgeInsets.all(8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
@@ -19,7 +19,7 @@ class CustomeSearchBar extends StatelessWidget {
         // Shadow for the search bar
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.transparent),
+          borderSide: const BorderSide(color: Colors.transparent),
           gapPadding: 10,
         ),
         focusedBorder: OutlineInputBorder(

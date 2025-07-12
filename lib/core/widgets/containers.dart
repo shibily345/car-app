@@ -87,21 +87,24 @@ class CustomContainer extends StatelessWidget {
       child: Container(
         alignment: alignment,
         padding: padding,
-        margin: margin,
+        margin: margin ?? const EdgeInsets.all(10),
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: color ?? Theme.of(context).primaryColor.withOpacity(0.1),
-          borderRadius: borderRadius ?? BorderRadius.circular(20),
+          color: color ?? Theme.of(context).colorScheme.primary.withAlpha(80),
+          borderRadius: borderRadius ?? BorderRadius.circular(10),
           boxShadow: boxShadow != null ? [boxShadow!] : null,
           border: border,
           image: image,
-          gradient: gradient ??
-              const LinearGradient(
-                colors: [Colors.blue, Colors.purple],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+          // gradient: gradient ??
+          //     LinearGradient(
+          //       colors: [
+          //         // Colors.white,
+          //         // Theme.of(context).colorScheme.primary.withOpacity(0.7)
+          //       ],
+          //       begin: Alignment.topLeft,
+          //       end: Alignment.bottomRight,
+          //     ),
         ),
         child: child,
       ),

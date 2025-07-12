@@ -1,0 +1,104 @@
+{
+    "brands": [
+        {
+            "brand": "Toyota",
+            "models": ["Corolla", "Camry", "RAV4", "Highlander", "Prius", "Tacoma", "Tundra", "Innova", "Fortuner"]
+        },
+        {
+            "brand": "Honda",
+            "models": ["Civic", "Accord", "CR-V", "Pilot", "Fit", "HR-V", "Odyssey", "City", "Amaze"]
+        },
+        {
+            "brand": "Ford",
+            "models": ["F-150", "Escape", "Explorer", "Mustang", "Edge", "Bronco", "Ranger", "EcoSport", "Endeavour"]
+        },
+        {
+            "brand": "Chevrolet",
+            "models": ["Silverado", "Equinox", "Malibu", "Tahoe", "Traverse", "Camaro", "Colorado", "Trailblazer"]
+        },
+        {
+            "brand": "BMW",
+            "models": ["3 Series", "5 Series", "7 Series", "X3", "X5", "X7", "Z4", "i4", "iX"]
+        },
+        {
+            "brand": "Mercedes-Benz",
+            "models": ["C-Class", "E-Class", "S-Class", "GLC", "GLE", "GLS", "A-Class", "EQC", "AMG GT"]
+        },
+        {
+            "brand": "Audi",
+            "models": ["A3", "A4", "A6", "Q3", "Q5", "Q7", "Q8", "e-tron", "RS5"]
+        },
+        {
+            "brand": "Tesla",
+            "models": ["Model S", "Model 3", "Model X", "Model Y", "Cybertruck", "Roadster", "Semi"]
+        },
+        {
+            "brand": "Nissan",
+            "models": ["Altima", "Sentra", "Rogue", "Murano", "Pathfinder", "Frontier", "Titan", "Magnite"]
+        },
+        {
+            "brand": "Hyundai",
+            "models": ["Elantra", "Sonata", "Tucson", "Santa Fe", "Kona", "Palisade", "Accent", "Creta", "Venue"]
+        },
+        {
+            "brand": "Kia",
+            "models": ["Soul", "Sportage", "Sorento", "Telluride", "Optima", "Seltos", "Rio", "Carnival", "Sonet"]
+        },
+        {
+            "brand": "Volkswagen",
+            "models": ["Golf", "Passat", "Tiguan", "Atlas", "Jetta", "ID.4", "Beetle", "Polo", "Virtus"]
+        },
+        {
+            "brand": "Subaru",
+            "models": ["Impreza", "Outback", "Forester", "Crosstrek", "Ascent", "Legacy", "WRX", "BRZ"]
+        },
+        {
+            "brand": "Mazda",
+            "models": ["Mazda3", "Mazda6", "CX-3", "CX-5", "CX-9", "MX-5 Miata", "CX-50", "CX-90"]
+        },
+        {
+            "brand": "Volvo",
+            "models": ["XC40", "XC60", "XC90", "S60", "S90", "V60", "V90", "C40 Recharge"]
+        },
+        {
+            "brand": "Jeep",
+            "models": ["Wrangler", "Grand Cherokee", "Cherokee", "Compass", "Renegade", "Gladiator", "Wagoneer"]
+        },
+        {
+            "brand": "Porsche",
+            "models": ["911", "Cayenne", "Macan", "Panamera", "Taycan", "718 Cayman", "718 Boxster"]
+        },
+        {
+            "brand": "Ferrari",
+            "models": ["488", "Roma", "Portofino", "SF90", "F8 Tributo", "812 Superfast", "LaFerrari"]
+        },
+        {
+            "brand": "Lamborghini",
+            "models": ["Huracan", "Aventador", "Urus", "Gallardo", "Murcielago", "Reventon", "Sian"]
+        },
+        {
+            "brand": "Jaguar",
+            "models": ["XE", "XF", "XJ", "F-Pace", "E-Pace", "I-Pace", "F-Type"]
+        },
+        {
+            "brand": "Mahindra",
+            "models": ["Thar", "Scorpio", "XUV700", "Bolero", "XUV300", "Marazzo", "Alturas G4"]
+        },
+        {
+            "brand": "Tata",
+            "models": ["Nexon", "Harrier", "Safari", "Altroz", "Tiago", "Tigor", "Punch"]
+        },
+        {
+            "brand": "Suzuki",
+            "models": ["Swift", "Baleno", "Vitara Brezza", "Ciaz", "Ertiga", "Alto", "Wagon R"]
+        },
+        {
+            "brand": "Renault",
+            "models": ["Kwid", "Triber", "Kiger", "Duster", "Captur", "Lodgy"]
+        },
+        {
+            "brand": "Skoda",
+            "models": ["Octavia", "Superb", "Kushaq", "Slavia", "Kodiaq", "Rapid"]
+        }
+    ]
+}

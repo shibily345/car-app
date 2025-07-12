@@ -57,10 +57,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDLvOmhdCe125AW8ZuM5v2po_QSZ7v0Q3A',
-    appId: '1:404251449019:android:0eaae62e58e6c7744c3b9e',
+    appId: '1:404251449019:android:1d831a2f0e32e6524c3b9e',
     messagingSenderId: '404251449019',
     projectId: 'car-dealer-79caa',
-    storageBucket: 'car-dealer-79caa.appspot.com',
+    storageBucket: 'car-dealer-79caa.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

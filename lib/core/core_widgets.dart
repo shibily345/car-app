@@ -268,6 +268,9 @@ class CDropDown extends StatelessWidget {
           closedBorderRadius: BorderRadius.circular(12.0),
         ),
         hintText: label ?? 'Select',
+        hintBuilder: (context, hint, enabled) {
+          return Text(hint);
+        },
         items: items ?? _list,
         onChanged: onChanged ??
             (value) {

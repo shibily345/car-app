@@ -2,19 +2,19 @@ name: car_app_beta
 description: "A new Flutter project."
 
 # Prevent accidental publishing to pub.dev.
-publish_to: 'none'
+publish_to: "none"
 
-version: 1.0.0+1
+version: 1.0.8+8
 
 environment:
   sdk: ^3.5.0
 
 dependencies:
   animated_custom_dropdown: ^3.1.1
-  awesome_notifications: ^0.9.3+1
   bloc: ^8.1.4
   cached_network_image: null
   cloud_firestore: ^5.4.4
+  connectivity_plus: ^6.1.3
   country_picker: ^2.0.26
   crypto: ^3.0.5
   dartz: ^0.10.1
@@ -26,13 +26,19 @@ dependencies:
   floor: ^1.5.0
   flutter:
     sdk: flutter
+  flutter_animate: ^4.5.2
   flutter_bloc: ^8.1.6
+  flutter_easyloading: ^3.0.5
   flutter_hooks: ^0.20.5
   flutter_localizations:
     sdk: flutter
+  flutter_screenutil: ^5.9.3
+  font_awesome_flutter: ^10.8.0
   get_it: ^7.7.0
   google_sign_in: ^6.2.1
   http: ^1.2.2
+  
+  hugeicons: ^0.0.11
   image_cropper: ^8.0.2
   image_picker: ^1.1.2
   lottie: ^3.1.2
@@ -40,11 +46,13 @@ dependencies:
   provider: ^6.1.2
   rive: ^0.13.13
   shared_preferences: null
+  shimmer: ^3.0.0
   sign_in_with_apple: ^6.1.2
-  timeago: ^3.7.0
+  timeago: null
   uuid: ^4.5.0
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.3
   flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
@@ -58,9 +66,9 @@ flutter:
   generate: true
 
   assets:
-    # Add assets from the images directory to the application.
     - assets/images/
     - assets/data/
+    - shorebird.yaml
   fonts:
     - family: Roboto
       fonts:
@@ -76,3 +84,16 @@ flutter:
           weight: 900
         - asset: assets/fonts/Poppins-Italic.ttf
           style: italic
+flutter_gen:
+  synthetic-package: false
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logom.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "path/to/image.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"

@@ -33,6 +33,33 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+   @override
+  Future<Either<Failure, UserModel>> emailSignIn(String email, String password) async {
+    try {
+      UserCredential remoteAuth = await remoteDataSource.emailSignIn(email, password);
+
+      localDataSource.cacheAuth(
+          authToCache: UserModel.fromFirebaseUser(remoteAuth.user!));
+
+      return Right(UserModel.fromFirebaseUser(remoteAuth.user!));
+    } on ServerException {
+      return Left(ServerFailure(errorMessage: 'This is a server exception'));
+    }
+  }
+     @override
+  Future<Either<Failure, UserModel>> emailRegister(String email, String password) async {
+    try {
+      UserCredential remoteAuth = await remoteDataSource.emailRegister(email, password);
+
+      localDataSource.cacheAuth(
+          authToCache: UserModel.fromFirebaseUser(remoteAuth.user!));
+
+      return Right(UserModel.fromFirebaseUser(remoteAuth.user!));
+    } on ServerException {
+      return Left(ServerFailure(errorMessage: 'This is a server exception'));
+    }
+  }
+
   @override
   Future<Either<Failure, UserModel>> appleSignIn() async {
     try {

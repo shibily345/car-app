@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:car_app_beta/core/core_widgets.dart';
@@ -7,6 +8,7 @@ import 'package:car_app_beta/src/features/auth/presentation/providers/user_provi
 import 'package:car_app_beta/src/features/cars/data/models/car_model.dart';
 import 'package:car_app_beta/src/features/cars/presentation/widgets/detail_sections.dart';
 import 'package:car_app_beta/src/features/my_shop/presentation/providers/update_provider.dart';
+import 'package:car_app_beta/src/widgets/common/ui_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -241,69 +243,258 @@ class LocationForm extends StatelessWidget {
 }
 
 class CarDetailForm extends StatelessWidget {
+  final PageController pageController;
+  final CarCreateProvider cp;
+
   const CarDetailForm({
     super.key,
     required this.cp,
+    required this.pageController,
   });
-  final CarCreateProvider cp;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(15),
-      height: 400,
-      child: ListView(
-        children: [
-          CustomTextField(
-            labelText: 'Brand',
-            hintText: 'Toyota',
-            onChanged: (value) => cp.updateMake(value),
-          ),
-          CustomTextField(
-            labelText: 'Model',
-            hintText: 'Innova Crysta',
-            onChanged: (value) => cp.updateModel(value),
-          ),
-          CustomTextField(
-            keyboardType: const TextInputType.numberWithOptions(),
-            hintText: '2016*',
-            labelText: 'Year',
-            onChanged: (value) => cp.updateYear(int.parse(value)),
-          ),
-          CDropDown(
-            onChanged: (value) => cp.updateTransmission(value),
-            label: "Transmission",
-            items: const [
-              'Manual',
-              'Automatic',
-              'Hybride',
-            ],
-          ),
-          CDropDown(
-            onChanged: (value) => cp.updateFuel(value),
-            label: 'Fual',
-            items: const [
-              'Diesel',
-              ' Petrole',
-              ' Electric',
-              ' Hybrid',
-              ' CNG',
-              ' Other',
-            ],
-          ),
-          CustomTextField(
-            keyboardType: const TextInputType.numberWithOptions(),
-            hintText: '13000+',
-            labelText: 'KM Driven',
-            onChanged: (value) => cp.updateMileage(int.parse(value)),
-          ),
-          CustomTextField(
-            keyboardType: TextInputType.multiline,
-            labelText: 'Describe what you are selling',
-            hintText: 'A detailed description',
-            onChanged: (value) => cp.updateDescription(value),
+
+  void _validateAndProceed(BuildContext context) {
+    final carData = cp.carData!;
+    if (carData.make.isEmpty) {
+      _showErrorDialog(context, 'Please select a car make.');
+      return;
+    }
+    if (carData.model.isEmpty) {
+      _showErrorDialog(context, 'Please select a car model.');
+      return;
+    }
+    if (carData.mileage <= 0) {
+      _showErrorDialog(context, 'Please enter a valid mileage.');
+      return;
+    }
+    if (carData.description.isEmpty) {
+      _showErrorDialog(context, 'Please provide a description.');
+      return;
+    }
+    if (carData.transmission.isEmpty) {
+      _showErrorDialog(context, 'Please select a transmission type.');
+      return;
+    }
+    if (carData.fuel.isEmpty) {
+      _showErrorDialog(context, 'Please select a fuel type.');
+      return;
+    }
+
+    pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Validation Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
           ),
         ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(15),
+      child: ListView(
+        children: [
+          const Text(
+            'Enter Car Details',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Provide detailed information about the car you are selling.',
+            style: TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          FutureBuilder<String>(
+            future: DefaultAssetBundle.of(context)
+                .loadString('assets/data/vehicles.json'),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError || !snapshot.hasData) {
+                return const Text('Error loading vehicle data');
+              }
+
+              final List<dynamic> jsonData =
+                  json.decode(snapshot.data!)['brands'];
+              final List<String> brands = jsonData
+                  .map((brandData) => brandData['brand'] as String)
+                  .toList();
+
+              return Column(
+                children: [
+                  _buildAutocomplete(
+                    label: 'Make',
+                    hint: 'Enter your vehicle\'s brand',
+                    options: brands,
+                    onSelected: cp.updateMake,
+                  ),
+                  _buildModelAutocomplete(jsonData),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          _buildYearSelector(context),
+          _buildTextField(
+            label: 'KM Driven',
+            hint: '13000+',
+            keyboardType: TextInputType.number,
+            onChanged: (value) => cp.updateMileage(int.tryParse(value) ?? 0),
+          ),
+          _buildTextField(
+            label: 'Description',
+            hint: 'A detailed description',
+            keyboardType: TextInputType.multiline,
+            onChanged: cp.updateDescription,
+          ),
+          _buildDropdown(
+            label: 'Transmission',
+            items: const ['Manual', 'Automatic', 'Hybrid'],
+            onChanged: cp.updateTransmission,
+          ),
+          _buildDropdown(
+            label: 'Fuel',
+            items: const ['Diesel', 'Petrol', 'Electric', 'Hybrid', 'CNG'],
+            onChanged: cp.updateFuel,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => _validateAndProceed(context),
+            child: const Text('Confirm and Next'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutocomplete({
+    required String label,
+    required String hint,
+    required List<String> options,
+    required Function(String) onSelected,
+  }) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) {
+          return const Iterable<String>.empty();
+        }
+        return options.where((option) =>
+            option.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+      },
+      onSelected: onSelected,
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        return TextField(
+          controller: controller,
+          focusNode: focusNode,
+          decoration: InputDecoration(labelText: label, hintText: hint),
+        );
+      },
+    );
+  }
+
+  Widget _buildModelAutocomplete(List<dynamic> jsonData) {
+    List<String> models = cp.carData!.make.isNotEmpty
+        ? jsonData
+            .firstWhere(
+              (brandData) => brandData['brand'] == cp.carData!.make,
+              orElse: () => {'models': []},
+            )['models']
+            .cast<String>()
+        : [];
+
+    return _buildAutocomplete(
+      label: 'Model',
+      hint: 'Enter car model',
+      options: models,
+      onSelected: cp.updateModel,
+    );
+  }
+
+  Widget _buildYearSelector(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final selectedYear = await showDialog<int>(
+          context: context,
+          builder: (BuildContext context) {
+            final currentYear = DateTime.now().year;
+            return AlertDialog(
+              title: const Text('Select Year'),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 300,
+                child: ListView.builder(
+                  itemCount: 50,
+                  itemBuilder: (context, index) {
+                    final year = currentYear - index;
+                    return ListTile(
+                      title: Text(year.toString()),
+                      onTap: () => Navigator.pop(context, year),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        );
+
+        if (selectedYear != null) {
+          cp.updateYear(selectedYear);
+        }
+      },
+      child: AbsorbPointer(
+        child: _buildTextField(
+          label: 'Year',
+          hint: '2016*',
+          controller: TextEditingController(
+            text: cp.carData!.year.toString(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hint,
+    TextInputType keyboardType = TextInputType.text,
+    TextEditingController? controller,
+    Function(String)? onChanged,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(labelText: label, hintText: hint),
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildDropdown({
+    required String label,
+    required List<String> items,
+    required Function(String) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(labelText: label),
+      items: items
+          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+          .toList(),
+      onChanged: (value) {
+        onChanged(value!);
+      },
     );
   }
 }

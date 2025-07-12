@@ -1,14 +1,18 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserCredential> googleSignIn();
   Future<UserCredential> appleSignIn();
+  Future<UserCredential> emailSignIn(String email, String password);
+  Future<UserCredential> emailRegister(String email, String password);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -27,6 +31,41 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     );
 
     return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
+
+  @override
+  Future<UserCredential> emailSignIn(String email, String password) async {
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return credential;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<UserCredential> emailRegister(String email, String password) async {
+    try {
+      debugPrint("emailRegister...........9090");
+
+      final credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return credential;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Error: ${e.code}');
+      rethrow;
+    }
   }
 
   String generateNonce([int length = 32]) {

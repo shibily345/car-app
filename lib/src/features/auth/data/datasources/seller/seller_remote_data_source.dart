@@ -81,6 +81,7 @@ class SellerRemoteDataSourceImpl implements SellerRemoteDataSource {
   @override
   Future<Response> updateSeller({required AddSellerParams params}) async {
     try {
+      // EaseLoading.show(status: "Updating seller...");
       final response = await dio.post(
         '${Ac.baseUrl}/api/seller/up',
         data: params.data.toJson(), // Ensure 'params.data.toJson()' is correct

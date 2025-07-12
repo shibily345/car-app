@@ -1,8 +1,8 @@
-import 'package:car_app_beta/core/widgets/text_fields.dart';
 import 'package:car_app_beta/src/features/cars/business/entities/car_list_entity.dart';
 import 'package:car_app_beta/src/features/cars/presentation/providers/cars_provider.dart';
 import 'package:car_app_beta/src/features/cars/presentation/widgets/car_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
@@ -33,34 +33,45 @@ class _SearchPageState extends State<SearchPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 100,
-        title: CustomTextField(
-          prefixIcon: Icons.search,
-          hintText: "Search...",
-          onChanged: (query) {
-            setState(() {
-              _searchQuery = query;
-            });
-          },
-        ),
-        // bottom: TabBar(
-        //   controller: _tabController,
-        //   tabs: const [
-        //     Tab(text: "By Date"),
-        //     Tab(text: "By Popularity"),
-        //     Tab(text: "By Rating"),
-        //   ],
-        // ),
-      ),
+          backgroundColor: Colors.transparent,
+          toolbarHeight: 100,
+          title: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 5.h),
+            child: GestureDetector(
+              onTap: () => Navigator.pushNamed(context, "/search"),
+              child: TextFormField(
+                onChanged: (query) {
+                  setState(() {
+                    _searchQuery = query;
+                  });
+                },
+                decoration: InputDecoration(
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 15.h),
+                  filled: true,
+                  fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  hintText: "Search here...",
+                  hintStyle: TextStyle(
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                    fontSize: 18.sp,
+                  ),
+                ),
+              ),
+            ),
+          )),
       body: SearchResultsTab(searchQuery: _searchQuery),
-      //  TabBarView(
-      //   controller: _tabController,
-      //   children: [
-
-      //     //   SearchResultsTab(sortBy: "Popularity", searchQuery: _searchQuery),
-      //     //   SearchResultsTab(sortBy: "Rating", searchQuery: _searchQuery),
-      //   ],
-      // ),
     );
   }
 }
@@ -76,10 +87,22 @@ class SearchResultsTab extends StatelessWidget {
     // Filter and sort items based on the search query and sorting method
 
     return Consumer<CarsProvider>(builder: (context, cars, state) {
-      List<CarEntity> filteredItems = cars.cars!
-          .where((item) =>
-              item.title!.toLowerCase().contains(searchQuery.toLowerCase()))
-          .toList();
+      if (cars.cars != null) {
+        List<CarEntity> filteredItems = cars.cars!
+            .where((item) =>
+                item.title!.toLowerCase().contains(searchQuery.toLowerCase()))
+            .toList();
+
+        return ListView.builder(
+          itemCount: cars.cars == null ? filteredItems.length : 5,
+          itemBuilder: (context, index) {
+            return cars.isloaded!
+                ? CarLisTile(car: filteredItems[index])
+                : const CarListLoadingTile();
+          },
+        );
+      }
+      return const CarListLoadingTile();
 
       // if (sortBy == "Date") {
       //   filteredItems.sort((a, b) => b["date"]!.compareTo(a["date"]!));
@@ -90,14 +113,6 @@ class SearchResultsTab extends StatelessWidget {
       // } else if (sortBy == "Rating") {
       //   filteredItems.sort((a, b) => b["rating"]!.compareTo(a["rating"]!));
       // }
-      return ListView.builder(
-        itemCount: cars.isloaded! ? filteredItems.length : 5,
-        itemBuilder: (context, index) {
-          return cars.isloaded!
-              ? CarLisTile(car: filteredItems[index])
-              : const CarListLoadingTile();
-        },
-      );
     });
   }
 }

@@ -19,6 +19,7 @@ import 'package:data_connection_checker_tv/data_connection_checker.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,7 +32,7 @@ class UserProvider extends ChangeNotifier {
   UserModel? get user => _user;
   User? _firebaseUser;
 
-  User? get firebaseUser => _firebaseUser;
+  User? get firebaseUser => FirebaseAuth.instance.currentUser;
   XFile _image = XFile("path");
   XFile get image => _image;
 
@@ -88,8 +89,6 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> loadUser() async {
-    _firebaseUser = FirebaseAuth.instance.currentUser;
-
     if (user != null) {
       _user = UserModel(
           uid: _firebaseUser!.uid,
@@ -284,6 +283,8 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> removeProductFromFavorites(String productId) async {
+    EasyLoading.show(status: "Removing from favorites");
+    currentFavorites.remove(productId);
     // Get the current Firebase user
     User? currentUser = FirebaseAuth.instance.currentUser;
 
@@ -309,10 +310,13 @@ class UserProvider extends ChangeNotifier {
           await docRef.update({
             'favoriteProductIds': currentFavorites,
           });
+          EasyLoading.dismiss();
           notifyListeners();
         }
       }
     }
+    notifyListeners();
+    EasyLoading.dismiss();
   }
 
   Future<List<String>> getFavoriteProductIds() async {
@@ -341,6 +345,10 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> addProductToFavorites(String productId) async {
+    EasyLoading.show(status: "Adding to favorites");
+    await getFavoriteProductIds();
+    currentFavorites.add(productId);
+
     // Get the current Firebase user
     User? currentUser = FirebaseAuth.instance.currentUser;
 
@@ -374,5 +382,7 @@ class UserProvider extends ChangeNotifier {
         });
       }
     }
+    EasyLoading.dismiss();
+    notifyListeners();
   }
 }

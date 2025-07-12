@@ -3,6 +3,7 @@ import 'package:car_app_beta/src/features/auth/presentation/providers/user_provi
 import 'package:car_app_beta/src/features/cars/business/entities/car_list_entity.dart';
 import 'package:car_app_beta/src/features/cars/presentation/providers/cars_provider.dart';
 import 'package:car_app_beta/src/features/cars/presentation/widgets/car_list_tile.dart';
+import 'package:car_app_beta/src/widgets/buttons/login_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,23 +28,27 @@ class _FavoritePageState extends State<FavoritePage> {
           title: const TextDef("Favorites"),
           centerTitle: false,
         ),
-        body: ListView.builder(
-          itemCount: up.currentFavorites.length ?? 0,
-          itemBuilder: (context, index) {
-            return CarShortListTile(
-              car: favCars[index],
-              onTap: () {
-                Navigator.pushNamed(context, "/carDetails",
-                    arguments: favCars[index]);
-              },
-              delete: IconButton(
-                  onPressed: () {
-                    up.removeProductFromFavorites(favCars[index].id!);
-                  },
-                  icon: const Icon(Icons.remove_circle)),
-            );
-          },
-        ),
+        body: up.firebaseUser == null
+            ? const LoginButton()
+            : up.currentFavorites.isEmpty
+                ? const Center(child: Text("No favorites yet"))
+                : ListView.builder(
+                    itemCount: up.currentFavorites.length,
+                    itemBuilder: (context, index) {
+                      return CarShortListTile(
+                        car: favCars[index],
+                        onTap: () {
+                          Navigator.pushNamed(context, "/carDetails",
+                              arguments: favCars[index]);
+                        },
+                        delete: IconButton(
+                            onPressed: () {
+                              up.removeProductFromFavorites(favCars[index].id!);
+                            },
+                            icon: const Icon(Icons.remove_circle)),
+                      );
+                    },
+                  ),
       );
     });
   }

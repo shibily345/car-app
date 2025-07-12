@@ -213,9 +213,6 @@ class CarCreateProvider with ChangeNotifier {
   bool _hasImage = false;
   bool get hasImage => _hasImage;
   Future<void> pickImage() async {
-    //bool permi = await checkPhotoPermission();
-
-    // if (permi) {
     final pickedFile = await ImagePicker()
         .pickImage(source: ImageSource.gallery)
         .then((value) {
@@ -224,7 +221,6 @@ class CarCreateProvider with ChangeNotifier {
       }
     });
     debugPrint("image picked :   $pickedFile");
-    //   }
   }
 
   _cropImage(File imgFile) async {

@@ -11,7 +11,7 @@ extension SpaceX on dynamic {
 extension SpaceY on dynamic {
   dynamic get spaceY {
     return SizedBox(
-      width: toDouble(),
+      height: toDouble(),
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:car_app_beta/core/widgets/containers.dart';
 import 'package:car_app_beta/src/features/cars/presentation/pages/favarates/favarites.dart';
-import 'package:car_app_beta/src/features/cars/presentation/pages/home/home_page.dart';
 import 'package:car_app_beta/src/features/cars/presentation/pages/profile/profile_page.dart';
 import 'package:car_app_beta/src/features/cars/presentation/pages/search/search.dart';
+import 'package:car_app_beta/src/features/home/home_page.dart';
 import 'package:car_app_beta/src/features/skeleton/model/nav_item_model.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart' as rive;
@@ -64,10 +64,11 @@ class _SkeletonNavState extends State<SkeletonNav> {
               selctedNavIndex = index;
             });
           },
-          children: [
-            const HomePage(),
-            const SearchPage(),
-            const FavoritePage(),
+          children: const [
+            HomePage(),
+            SearchPage(),
+            // const SearchPage(),
+            FavoritePage(),
             ProfilePage(),
             // HabitStatisticsPage(),
             // NewHabitPage(),
@@ -75,77 +76,92 @@ class _SkeletonNavState extends State<SkeletonNav> {
           ],
         ),
         bottomSheet: Padding(
-          padding: const EdgeInsets.only(bottom: 40.0),
-          child: CustomContainer(
-            gradient: LinearGradient(
-              colors: isLight
-                  ? [
-                      const Color.fromARGB(255, 217, 234, 248),
-                      const Color.fromARGB(255, 242, 214, 246)
-                    ]
-                  : [
-                      const Color.fromARGB(255, 38, 60, 81),
-                      const Color.fromARGB(255, 77, 45, 82)
-                    ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+          padding: const EdgeInsets.only(bottom: 30.0),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(24)),
+              boxShadow: [
+                BoxShadow(
+                  color: th.shadowColor.withOpacity(0.3),
+                  offset: const Offset(0, 20),
+                  blurRadius: 20,
+                ),
+              ],
+              color: th.colorScheme.surface,
+              border: Border.all(
+                color: th.colorScheme.outline.withOpacity(0.1),
+              ),
+              gradient: LinearGradient(
+                colors: isLight
+                    ? [
+                        const Color.fromARGB(255, 255, 255, 255),
+                        const Color.fromARGB(255, 255, 215, 215)
+                      ]
+                    : [
+                        const Color.fromARGB(255, 38, 60, 81),
+                        const Color.fromARGB(255, 41, 40, 40)
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
+
             height: 70,
             width: MediaQuery.of(context).size.width * 0.9,
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.symmetric(horizontal: 24),
-            // decoration: BoxDecoration(
-            color: th.primaryColorLight,
-            borderRadius: const BorderRadius.all(Radius.circular(24)),
-            boxShadow: BoxShadow(
-              color: th.shadowColor.withOpacity(0.3),
-              offset: const Offset(0, 20),
-              blurRadius: 20,
-            ),
+
             // ],
             // ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(bottomNavItemsDark.length, (index) {
-                final riveIcon = bottomNavItemsDark[index];
-                return GestureDetector(
-                  onTap: () {
-                    _pageController.jumpToPage(index);
-                    animateTheIcon(index);
-                    setState(() {
-                      selctedNavIndex = index;
-                    });
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedBar(isActive: selctedNavIndex == index),
-                      SizedBox(
-                        height: 36,
-                        width: 36,
-                        child: Opacity(
-                          opacity: selctedNavIndex == index ? 1 : 0.4,
-                          child: ColorFiltered(
-                            colorFilter: ColorFilter.mode(
-                              th.primaryColor,
-                              BlendMode.modulate,
-                            ),
-                            child: rive.RiveAnimation.asset(
-                              artboard: riveIcon.artboard,
-                              riveIcon.src,
-                              onInit: (artboard) {
-                                riveOnInIt(artboard,
-                                    stateMachineName:
-                                        riveIcon.stateMachineName);
-                              },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(bottomNavItemsDark.length, (index) {
+                  final riveIcon = bottomNavItemsDark[index];
+                  return GestureDetector(
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                      animateTheIcon(index);
+                      setState(() {
+                        selctedNavIndex = index;
+                      });
+                    },
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedBar(isActive: selctedNavIndex == index),
+                        SizedBox(
+                          height: 36,
+                          width: 36,
+                          child: Opacity(
+                            opacity: selctedNavIndex == index ? 1 : 0.4,
+                            child: ColorFiltered(
+                              colorFilter: ColorFilter.mode(
+                                th.primaryColor,
+                                BlendMode.modulate,
+                              ),
+                              child: rive.RiveAnimation.asset(
+                                artboard: riveIcon.artboard,
+                                riveIcon.src,
+                                onInit: (artboard) {
+                                  riveOnInIt(artboard,
+                                      stateMachineName:
+                                          riveIcon.stateMachineName);
+                                },
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
+                      ],
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
         ));

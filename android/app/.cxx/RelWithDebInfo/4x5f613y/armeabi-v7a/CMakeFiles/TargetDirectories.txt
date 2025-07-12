@@ -1,0 +1,2 @@
+/Users/mhdshibil/career/car_app_beta/android/app/.cxx/RelWithDebInfo/4x5f613y/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/mhdshibil/career/car_app_beta/android/app/.cxx/RelWithDebInfo/4x5f613y/armeabi-v7a/CMakeFiles/rebuild_cache.dir

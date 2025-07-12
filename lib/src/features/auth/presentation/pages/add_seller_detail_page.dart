@@ -7,6 +7,7 @@ import 'package:car_app_beta/core/widgets/text_fields.dart';
 import 'package:car_app_beta/src/features/auth/data/models/seller.dart';
 import 'package:car_app_beta/src/features/auth/presentation/providers/auth_provider.dart';
 import 'package:car_app_beta/src/features/auth/presentation/providers/user_provider.dart';
+import 'package:car_app_beta/src/widgets/common/ui_helpers.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,147 +21,94 @@ class AddSellerDetailPage extends StatefulWidget {
 }
 
 class _AddSellerDetailPageState extends State<AddSellerDetailPage> {
-  Country code = Country.parse("us");
-  TextEditingController numController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
-  TextEditingController locationController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-
-  final _formKey = GlobalKey<FormState>();
+  final Country _defaultCountry = Country.parse("us");
+  final TextEditingController _numController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    final authProvider =
-        Provider.of<AuthenticationProvider>(context, listen: false);
-    numController = TextEditingController();
-    nameController =
-        TextEditingController(text: authProvider.firebaseUser!.displayName);
-    emailController =
-        TextEditingController(text: authProvider.firebaseUser!.email);
-    locationController = TextEditingController();
+    final authProvider = Provider.of<UserProvider>(context, listen: false);
+    _nameController.text = authProvider.firebaseUser?.displayName ?? '';
+    _emailController.text = authProvider.firebaseUser?.email ?? '';
   }
 
   @override
   void dispose() {
-    numController.dispose();
-    nameController.dispose();
-    locationController.dispose();
-    emailController.dispose();
+    _numController.dispose();
+    _nameController.dispose();
+    _locationController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<AuthenticationProvider, UserProvider>(
-      builder: (context, ap, up, state) {
-        // SellerModel data = SellerModel(""
-        //   uid: ap.firebaseUser!.uid,
-        //   displayName: nameController.text,
-        //   email: emailController.text,
-        //   dealershipName: nameController.text,
-        //   contactNumber: numController.text,
-        //   location: locationController.text,
-        //   photoURL: up.hasImage ? up.imageName : ap.firebaseUser!.photoURL!,
-        // );
-
-        var th = Theme.of(context);
-        var sz = MediaQuery.of(context).size;
-
-        return Scaffold(
-          appBar: AppBar(
-            title: const TextDef("Your Details"),
-          ),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                children: [
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(
-                        image: _buildUserImage(up, ap),
-                        color: th.splashColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      height: 130,
-                      width: 130,
-                      child: Center(
-                        child: IconButton(
-                          onPressed: up.pickImage,
-                          icon: Icon(
-                            up.hasImage ? null : Icons.camera_alt_outlined,
-                            size: 40,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  CustomTextField(
-                    controller: nameController,
-                    prefixIcon: Icons.person,
-                    labelText: "Edit Name",
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () => _showPicker(context),
-                        child: TextDef(
-                          code.flagEmoji,
-                          fontSize: 40,
-                        ),
-                      ),
-                      Expanded(
-                        child: CustomTextField(
-                          controller: numController,
-                          labelText: "Whatsapp Number with Code",
-                          validator: _phoneValidator,
-                        ),
-                      ),
-                    ],
-                  ),
-                  CustomTextField(
-                    controller: locationController,
-                    labelText: "Edit Location",
-                  ),
-                  CustomTextField(
-                    controller: emailController,
-                    labelText: "Edit Email",
-                    validator: _emailValidator,
-                  ),
-                  const SizedBox(height: 40),
-                  OutlineButton(
-                    label: "Confirm",
-                    icon: Icons.done_outline_rounded,
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        String iName = await up.uploadImage(up.image);
-                        // Proceed with saving seller details
-                        up.eitherFailureOrUpdateSeller(
-                            params: AddSellerParams(
-                                data: SellerModel(
-                          id: 'null',
-                          uid: ap.firebaseUser!.uid,
-                          displayName: nameController.text,
-                          email: emailController.text,
-                          dealershipName: nameController.text,
-                          contactNumber: numController.text,
-                          location: locationController.text,
-                          photoURL:
-                              up.hasImage ? iName : ap.firebaseUser!.photoURL!,
-                        )));
-                        Navigator.pushNamed(context, "/");
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 200),
-                ],
+    return Scaffold(
+      appBar: AppBar(title: const Text("Your Details")),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              const SizedBox(height: 20),
+              _buildProfileImage(context),
+              const SizedBox(height: 20),
+              _buildTextField(
+                controller: _nameController,
+                labelText: "Edit Name",
+                prefixIcon: Icons.person,
+                validator: _requiredValidator("Please enter your name"),
               ),
+              const SizedBox(height: 20),
+              _buildPhoneField(context),
+              _buildTextField(
+                controller: _locationController,
+                labelText: "Edit Location",
+                validator: _requiredValidator("Please enter your location"),
+              ),
+              verticalSpaceSmall,
+              _buildTextField(
+                controller: _emailController,
+                labelText: "Edit Email",
+                validator: _emailValidator,
+              ),
+              const SizedBox(height: 40),
+              ElevatedButton.icon(
+                onPressed: _onConfirm,
+                icon: const Icon(Icons.done_outline_rounded),
+                label: const Text("Confirm"),
+              ),
+              const SizedBox(height: 200),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileImage(BuildContext context) {
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, _) {
+        final image = userProvider.hasImage
+            ? FileImage(File(userProvider.image.path))
+            : userProvider.firebaseUser?.photoURL != null
+                ? NetworkImage(userProvider.firebaseUser!.photoURL!)
+                : null;
+
+        return Center(
+          child: GestureDetector(
+            onTap: userProvider.pickImage,
+            child: CircleAvatar(
+              radius: 65,
+              backgroundImage: image as ImageProvider?,
+              child: image == null
+                  ? const Icon(Icons.camera_alt_outlined, size: 40)
+                  : null,
             ),
           ),
         );
@@ -168,16 +116,114 @@ class _AddSellerDetailPageState extends State<AddSellerDetailPage> {
     );
   }
 
-  DecorationImage? _buildUserImage(UserProvider up, AuthenticationProvider ap) {
-    if (up.hasImage && File(up.image.path).existsSync()) {
-      return DecorationImage(
-          image: FileImage(File(up.image.path)), fit: BoxFit.cover);
+  Widget _buildPhoneField(BuildContext context) {
+    return Row(
+      children: [
+        TextButton(
+          onPressed: () => _showCountryPicker(context),
+          child: Text(
+            _defaultCountry.flagEmoji,
+            style: const TextStyle(fontSize: 40),
+          ),
+        ),
+        Expanded(
+          child: _buildTextField(
+            controller: _numController,
+            labelText: "Whatsapp Number with Code",
+            validator: _phoneValidator,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    IconData? prefixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+        border: const OutlineInputBorder(),
+      ),
+      validator: validator,
+    );
+  }
+
+  void _showCountryPicker(BuildContext context) {
+    showCountryPicker(
+      favorite: [
+        'in',
+        'ae',
+      ],
+      showPhoneCode: true,
+
+      // Optional. Sheet moves when keyboard opens.
+      moveAlongWithKeyboard: false,
+      // Optional. Sets the theme for the country list picker.
+      countryListTheme: CountryListThemeData(
+        // Optional. Sets the border radius for the bottomsheet.
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(40.0),
+          topRight: Radius.circular(40.0),
+        ),
+        // Optional. Styles the search field.
+        inputDecoration: InputDecoration(
+          labelText: 'Search',
+          hintText: 'Start typing to search',
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: const Color(0xFF8C98A8).withOpacity(0.2),
+            ),
+          ),
+        ),
+        // Optional. Styles the text in the search field
+        searchTextStyle: const TextStyle(
+          color: Colors.blue,
+          fontSize: 18,
+        ),
+      ),
+
+      context: context,
+      onSelect: (Country country) {
+        setState(() {
+          _numController.text = "+${country.phoneCode}";
+        });
+      },
+    );
+  }
+
+  void _onConfirm() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final imageUrl = userProvider.hasImage
+          ? await userProvider.uploadImage(userProvider.image)
+          : userProvider.firebaseUser?.photoURL ?? '';
+
+      final seller = SellerModel(
+        id: 'null',
+        uid: userProvider.firebaseUser!.uid,
+        displayName: _nameController.text,
+        email: _emailController.text,
+        dealershipName: _nameController.text,
+        contactNumber: _numController.text,
+        location: _locationController.text,
+        photoURL: imageUrl,
+      );
+
+      userProvider.eitherFailureOrUpdateSeller(
+          params: AddSellerParams(data: seller));
+      Navigator.pushNamed(context, "/");
     }
-    if (ap.firebaseUser?.photoURL != null) {
-      return DecorationImage(
-          image: NetworkImage(ap.firebaseUser!.photoURL!), fit: BoxFit.cover);
-    }
-    return null;
+  }
+
+  String? Function(String?) _requiredValidator(String message) {
+    return (value) => value == null || value.isEmpty ? message : null;
   }
 
   String? _phoneValidator(String? value) {
@@ -196,37 +242,5 @@ class _AddSellerDetailPageState extends State<AddSellerDetailPage> {
       return 'Please enter a valid email address';
     }
     return null;
-  }
-
-  void _showPicker(BuildContext context) {
-    showCountryPicker(
-      context: context,
-      countryListTheme: CountryListThemeData(
-        flagSize: 25,
-        backgroundColor: Colors.white,
-        textStyle: const TextStyle(fontSize: 16, color: Colors.blueGrey),
-        bottomSheetHeight: 500,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20.0),
-          topRight: Radius.circular(20.0),
-        ),
-        inputDecoration: InputDecoration(
-          labelText: 'Search',
-          hintText: 'Start typing to search',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: const Color(0xFF8C98A8).withOpacity(0.2),
-            ),
-          ),
-        ),
-      ),
-      onSelect: (Country country) {
-        setState(() {
-          code = country;
-          numController.text = "+${code.phoneCode}";
-        });
-      },
-    );
   }
 }

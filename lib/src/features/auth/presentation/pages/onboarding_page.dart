@@ -1,11 +1,15 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:car_app_beta/core/widgets/containers.dart';
 import 'package:car_app_beta/core/widgets/text.dart';
 import 'package:car_app_beta/src/features/auth/presentation/model/onboard_model.dart';
-import 'package:car_app_beta/src/features/auth/presentation/providers/auth_provider.dart';
+import 'package:car_app_beta/src/widgets/buttons/animated_press_button.dart';
+import 'package:car_app_beta/src/widgets/common/ui_helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingPage extends StatelessWidget {
@@ -49,6 +53,8 @@ class _BuildBodyState extends State<BuildBody> {
     _startAutoScroll();
   }
 
+
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -58,8 +64,8 @@ class _BuildBodyState extends State<BuildBody> {
   }
 
   void _startAutoScroll() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
-      if (_currentPage < 3) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
+      if (_currentPage < 4) {
         _currentPage++;
       } else {
         _currentPage = 0;
@@ -89,161 +95,102 @@ class _BuildBodyState extends State<BuildBody> {
           } else if (snapshot.hasData) {
             final data = snapshot.data!;
 
-            return Consumer<AuthenticationProvider>(builder: (context, ap, _) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ClipPath(
-                    clipper: MyClipper(),
-                    child: Container(
-                      width: widget.size.width,
-                      height: widget.size.height * 0.6,
-                      color: widget.th.splashColor,
-                      child: SizedBox(
-                        height: widget.size.height * 0.23,
-                        child: PageView.builder(
-                          controller: _pageControllerImage,
-                          itemCount: data.onboarding.length,
-                          onPageChanged: (int page) {
-                            setState(() {
-                              _currentPage = page;
-                            });
-                          },
-                          itemBuilder: (context, index) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                gradient: RadialGradient(
-                                  center: Alignment.center,
-                                  radius: 0.8,
-                                  colors: [
-                                    Colors.white,
-                                    widget.th.primaryColor.withOpacity(0.4),
-                                  ],
-                                  stops: const [0.3, 1.0],
-                                ),
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                ClipPath(
+                  clipper: MyClipper(),
+                  child: Container(
+                    width: widget.size.width,
+                    height: widget.size.height * 0.6,
+                    color: widget.th.splashColor,
+                    child: SizedBox(
+                      height: widget.size.height * 0.23,
+                      child: PageView.builder(
+                        controller: _pageControllerImage,
+                        itemCount: data.onboarding.length,
+                        onPageChanged: (int page) {
+                          setState(() {
+                            _currentPage = page;
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                center: Alignment.center,
+                                radius: 0.8,
+                                colors: [
+                                  Colors.white,
+                                  widget.th.primaryColor.withOpacity(0.4),
+                                ],
+                                stops: const [0.3, 1.0],
                               ),
-                              child: Center(
-                                  child: Image.asset(
-                                      data.onboarding[index].image)),
-                            );
-                          },
-                        ),
+                            ),
+                            child: Center(
+                                child:
+                                    Lottie.asset(data.onboarding[index].image)),
+                          );
+                        },
                       ),
                     ),
                   ),
-                  SizedBox(
-                    height: widget.size.height * 0.23,
-                    child: PageView.builder(
-                      controller: _pageControllerText,
-                      itemCount: data.onboarding.length,
-                      onPageChanged: (int page) {
-                        setState(() {
-                          _currentPage = page;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.only(
-                            top: 45,
-                            left: 40,
-                            right: 40,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextDef(
-                                data.onboarding[index].title,
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                textAlign: TextAlign.start,
-                              ),
-                              TextDef(
-                                data.onboarding[index].paragraph,
-                                maxLines: 4,
-                              )
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const Spacer(),
-                  ButtonDef(
-                    things: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.g_mobiledata_rounded),
-                        TextDef(
-                          "Login With Google",
-                        )
-                      ],
-                    ),
-                    onTap: () async {
-                      try {
-                        final result = await ap.eitherFailureOrAuth();
-
-                        if (!mounted) return;
-
-                        if (result.isRight()) {
-                          if (ap.firebaseUser!.metadata.creationTime ==
-                              ap.firebaseUser!.metadata.lastSignInTime) {
-                            debugPrint("User is new");
-                            Navigator.pushReplacementNamed(
-                                context, '/decision');
-                          } else {
-                            Navigator.pushReplacementNamed(context, "/");
-                          }
-                        } else {
-                          debugPrint('Login failed');
-                        }
-                      } catch (error) {
-                        debugPrint('Error during login: $error');
-                      }
+                ),
+                SizedBox(
+                  height: widget.size.height * 0.23,
+                  child: PageView.builder(
+                    controller: _pageControllerText,
+                    itemCount: data.onboarding.length,
+                    onPageChanged: (int page) {
+                      setState(() {
+                        _currentPage = page;
+                      });
                     },
-                    height: 40,
-                    width: widget.size.width * 0.8,
-                  ),
-                  ButtonDef(
-                    onTap: () async {
-                      try {
-                        if (!Platform.isIOS) return;
-                        final result = await ap.eitherFailureOrAuthWithApple();
-
-                        if (!mounted) return;
-
-                        if (result.isRight()) {
-                          if (ap.firebaseUser!.metadata.creationTime ==
-                              ap.firebaseUser!.metadata.lastSignInTime) {
-                            debugPrint("User is new");
-                            Navigator.pushReplacementNamed(
-                                context, '/decision');
-                          } else {
-                            debugPrint("User already exists");
-                            Navigator.pushReplacementNamed(context, "/");
-                          }
-                        } else {
-                          debugPrint('Login failed');
-                        }
-                      } catch (error) {
-                        debugPrint('Error during login: $error');
-                      }
+                    itemBuilder: (context, index) {
+                      return Container(
+                        margin: EdgeInsets.only(
+                          top: 45.h,
+                          left: 40.w,
+                          right: 40.w,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextDef(
+                              maxLines: 2,
+                              data.onboarding[index].title,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              textAlign: TextAlign.start,
+                            ),
+                            TextDef(
+                              fontSize: 16,
+                              data.onboarding[index].paragraph,
+                              maxLines: 4,
+                            )
+                          ],
+                        ),
+                      );
                     },
-                    things: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.apple_sharp),
-                        TextDef(
-                          "Login With Apple",
-                        )
-                      ],
-                    ),
-                    height: 40,
-                    width: widget.size.width * 0.8,
                   ),
-                  SpaceY(widget.size.height * 0.04),
-                ],
-              );
-            });
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: AnimatedPressButton(
+                    height: 60.h,
+                    borderRadius: 50,
+                    icon: FontAwesomeIcons.arrowRight,
+                    label: 'Get Started',
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/login2');
+                    },
+                    width: screenWidth(context),
+                  ),
+                ),
+                const SpaceY(30),
+              ],
+            );
           } else {
             return const Center(child: Text('No data available'));
           }

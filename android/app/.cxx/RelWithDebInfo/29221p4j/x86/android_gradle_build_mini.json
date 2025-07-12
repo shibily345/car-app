@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/mhdshibil/.shorebird/bin/cache/flutter/0ac69de92c7201830d6a687a44fa0d34f6003f90/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/mhdshibil/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/mhdshibil/career/car_app_beta/android/app/.cxx/RelWithDebInfo/29221p4j/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/mhdshibil/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/mhdshibil/career/car_app_beta/android/app/.cxx/RelWithDebInfo/29221p4j/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

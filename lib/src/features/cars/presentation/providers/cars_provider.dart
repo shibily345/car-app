@@ -24,6 +24,34 @@ class CarsProvider extends ChangeNotifier {
     this.failure,
   });
   bool? get isloaded => _isLoaded;
+  String? selectedMake;
+  List<String> selectedMakes = [];
+
+  void toggleMakeSelection(String make) {
+    if (selectedMakes.contains(make)) {
+      selectedMakes.remove(make);
+    } else {
+      selectedMakes.add(make);
+    }
+    filterBySelectedMakes();
+    notifyListeners();
+  }
+
+  void filterBySelectedMakes() {
+    if (selectedMakes.isEmpty) {
+      eitherFailureOrCars();
+    } else {
+      cars = cars?.where((car) => selectedMakes.contains(car.make)).toList();
+    }
+    notifyListeners();
+  }
+
+  void resetFilter() {
+    selectedMakes.clear();
+    eitherFailureOrCars();
+    notifyListeners();
+  }
+
   Future<Either<Failure, List<CarModel>>> eitherFailureOrCars() async {
     CarListRepositoryImpl repository = CarListRepositoryImpl(
       remoteDataSource: CarListRemoteDataSourceImpl(dio: Dio()),
@@ -51,6 +79,14 @@ class CarsProvider extends ChangeNotifier {
       },
     );
     return failureOrCars;
+  }
+
+  void filterByMake(String make) {
+    if (cars != null) {
+      final filteredCars = cars!.where((car) => car.make == make).toList();
+      cars = filteredCars;
+      notifyListeners();
+    }
   }
 
   Future<void> uploadImage(File imageFile) async {

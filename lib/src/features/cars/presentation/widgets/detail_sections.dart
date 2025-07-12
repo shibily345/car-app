@@ -1,4 +1,6 @@
 import 'package:car_app_beta/core/core_widgets.dart';
+import 'package:car_app_beta/core/widgets/containers.dart';
+import 'package:car_app_beta/src/extensions.dart';
 import 'package:car_app_beta/src/features/my_shop/presentation/providers/update_provider.dart';
 import 'package:flutter/material.dart';
 
@@ -41,19 +43,21 @@ class DescSec extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Ctext(
-            'Description:',
+            color: Colors.black,
+            'Description',
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 8),
+          10.spaceY,
           Ctext(
+            color: Colors.black,
             description,
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w300,
             maxLines: 5,
           ),
@@ -75,13 +79,13 @@ class DetailsSec extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 18),
           const Text(
-            'Fetures:',
+            '    Fetures:',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -93,9 +97,10 @@ class DetailsSec extends StatelessWidget {
               spacing: 8.0, // gap between adjacent chips
               runSpacing: 4.0, // gap between lines
               children: List<Widget>.generate(details.length, (int index) {
-                return Chip(
-                  label: Text(details[index].toString()),
-                  backgroundColor: Colors.lightBlue[100],
+                return CustomContainer(
+                  padding: const EdgeInsets.all(10),
+                  child: Text(details[index].toString()),
+                  // backgroundColor: Colors.lightBlue[100],
                 );
               }),
             ),
@@ -125,7 +130,7 @@ class UpDetailsSec extends StatelessWidget {
         children: [
           const SizedBox(height: 18),
           const Text(
-            'Fetures:',
+            'Fetures',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -233,11 +238,12 @@ class PriceSec extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Ctext(
         'AED $price',
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
+        fontSize: 20,
+        color: Theme.of(context).primaryColor,
+        fontWeight: FontWeight.w800,
       ),
     );
   }

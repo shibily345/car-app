@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "404251449019",
     "project_id": "car-dealer-79caa",
-    "storage_bucket": "car-dealer-79caa.appspot.com"
+    "storage_bucket": "car-dealer-79caa.firebasestorage.app"
   },
   "client": [
     {
@@ -12,7 +12,20 @@
           "package_name": "com.example.car_app_beta"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "404251449019-od5h9bub63o09nv4ubtklvmber9nfnl2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.car_app_beta",
+            "certificate_hash": "5c9defb51de2cd37848427d480ab8241d92beeea"
+          }
+        },
+        {
+          "client_id": "404251449019-pol220msorcb6ffo1gjob7pie3d83ona.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDLvOmhdCe125AW8ZuM5v2po_QSZ7v0Q3A"
@@ -20,7 +33,63 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "404251449019-pol220msorcb6ffo1gjob7pie3d83ona.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "404251449019-bdotpp40e9jr4q121tnm2heahmnd212l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.carAppBeta"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:404251449019:android:1d831a2f0e32e6524c3b9e",
+        "android_client_info": {
+          "package_name": "com.sfdtech.car_app_beta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "404251449019-s2sct8ffurmfpu5jlj71nhl3al03molc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sfdtech.car_app_beta",
+            "certificate_hash": "5c9defb51de2cd37848427d480ab8241d92beeea"
+          }
+        },
+        {
+          "client_id": "404251449019-pol220msorcb6ffo1gjob7pie3d83ona.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLvOmhdCe125AW8ZuM5v2po_QSZ7v0Q3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "404251449019-pol220msorcb6ffo1gjob7pie3d83ona.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "404251449019-bdotpp40e9jr4q121tnm2heahmnd212l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.carAppBeta"
+              }
+            }
+          ]
         }
       }
     }

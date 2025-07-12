@@ -3,8 +3,9 @@ import 'package:car_app_beta/core/core_widgets.dart';
 import 'package:car_app_beta/core/widgets/containers.dart';
 import 'package:car_app_beta/core/widgets/text.dart';
 import 'package:car_app_beta/src/features/cars/business/entities/car_list_entity.dart';
-import 'package:car_app_beta/src/features/cars/presentation/pages/home/widget.dart';
+import 'package:car_app_beta/src/features/cars/presentation/pages/used_cars/widget.dart';
 import 'package:car_app_beta/src/features/cars/presentation/providers/cars_provider.dart';
+import 'package:car_app_beta/src/widgets/cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as ta;
@@ -418,13 +419,9 @@ class CarShortListTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              CustomContainer(
-                borderRadius: BorderRadius.circular(10),
-                image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: NetworkImage(car.images!.isEmpty
-                        ? ''
-                        : "${Ac.baseUrl}${car.images!.first}")),
+              CachedImageWithShimmer(
+                imageUrl:
+                    car.images!.isEmpty ? '' : Ac.baseUrl + car.images!.first,
                 height: 100,
                 width: 100,
               ),

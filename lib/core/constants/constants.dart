@@ -13,6 +13,6 @@ String kFrontShiny = 'front_shiny';
 int maxPokemonId = 1008;
 
 class Ac {
-  static const String baseUrl = "http://192.168.1.11:6003";
+  static const String baseUrl = "https://car-dealer-server-5n0u.onrender.com";
   static const String imageUrl = "$baseUrl/uploads/";
 }

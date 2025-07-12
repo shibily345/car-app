@@ -63,38 +63,16 @@ ThemeData darkTheme(BuildContext context) {
 
 ThemeData lightTheme(BuildContext context) {
   return ThemeData(
-    primaryColor: const Color.fromARGB(255, 48, 16, 72),
-    primaryColorDark: Colors.black,
-    primaryColorLight: Colors.white,
-    hoverColor: Colors.white,
-    indicatorColor: Colors.black,
     useMaterial3: true,
+    brightness: Brightness.light,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.purple,
+      seedColor: Colors.red,
       brightness: Brightness.light,
-    ),
-    scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
     ),
     bottomSheetTheme: const BottomSheetThemeData(
       modalBackgroundColor: Colors.transparent,
       backgroundColor: Colors.transparent,
       elevation: 0,
-    ),
-    iconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary),
-    textButtonTheme: TextButtonThemeData(
-      style: ButtonStyle(
-        foregroundColor: WidgetStateColor.resolveWith(
-          (states) => Theme.of(context).colorScheme.primary,
-        ),
-      ),
-    ),
-    dialogTheme: DialogTheme(
-      surfaceTintColor: Theme.of(context).colorScheme.primary,
-      iconColor: Theme.of(context).colorScheme.primary,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
     ),
   );
 }

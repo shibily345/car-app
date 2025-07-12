@@ -42,8 +42,7 @@ class TextDef extends StatelessWidget {
       style: style?.copyWith(
             fontSize: fontSize,
             fontWeight: fontWeight,
-            color: color ??
-                Theme.of(context).indicatorColor.withOpacity(opacity ?? 1),
+            color: color,
             decoration: textDecoration,
             fontStyle: fontStyle,
             letterSpacing: letterSpacing,
