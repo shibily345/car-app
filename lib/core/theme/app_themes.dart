@@ -28,7 +28,6 @@ ThemeData darkTheme(BuildContext context) {
     primaryColor: const Color.fromARGB(255, 242, 205, 248),
     primaryColorDark: Colors.black,
     primaryColorLight: Colors.white,
-    indicatorColor: Colors.white,
     hoverColor: Colors.black,
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
@@ -53,11 +52,12 @@ ThemeData darkTheme(BuildContext context) {
         ),
       ),
     ),
-    dialogTheme: DialogTheme(
-      surfaceTintColor: Theme.of(context).colorScheme.primary,
-      iconColor: Theme.of(context).colorScheme.primary,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-    ),
+    tabBarTheme: const TabBarThemeData(indicatorColor: Colors.white),
+    // dialogTheme: DialogTheme(
+    //   surfaceTintColor: Theme.of(context).colorScheme.primary,
+    //   iconColor: Theme.of(context).colorScheme.primary,
+    //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+    // ),
   );
 }
 
@@ -66,7 +66,7 @@ ThemeData lightTheme(BuildContext context) {
     useMaterial3: true,
     brightness: Brightness.light,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.red,
+      seedColor: Colors.blue,
       brightness: Brightness.light,
     ),
     bottomSheetTheme: const BottomSheetThemeData(

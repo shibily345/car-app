@@ -81,13 +81,17 @@ class SellerRemoteDataSourceImpl implements SellerRemoteDataSource {
   @override
   Future<Response> updateSeller({required AddSellerParams params}) async {
     try {
-      // EaseLoading.show(status: "Updating seller...");
+      debugPrint("Creating/Updating seller with data: ${params.data.toJson()}");
+
       final response = await dio.post(
         '${Ac.baseUrl}/api/seller/up',
-        data: params.data.toJson(), // Ensure 'params.data.toJson()' is correct
+        data: params.data.toJson(),
       );
+
       debugPrint(
-          "---response----${response.statusMessage}------------------------");
+          "Response: ${response.statusCode} - ${response.statusMessage}");
+      debugPrint("Response data: ${response.data}");
+
       return response;
     } on DioException catch (e) {
       // Handle Dio-specific exceptions
@@ -95,7 +99,7 @@ class SellerRemoteDataSourceImpl implements SellerRemoteDataSource {
       return e.response ??
           Response(
               requestOptions: RequestOptions(path: ''),
-              statusCode: 500, // Return a default response if it's null
+              statusCode: 500,
               statusMessage: 'Unknown error occurred');
     } catch (e) {
       debugPrint("Unexpected error: ${e.toString()}------------------------");

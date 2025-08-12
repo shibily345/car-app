@@ -1,23 +1,22 @@
 import 'dart:developer';
 
-import 'package:car_app_beta/core/connection/network_info.dart';
 import 'package:car_app_beta/core/constants/constants.dart';
+import 'package:car_app_beta/core/connection/network_info.dart';
 import 'package:car_app_beta/core/errors/failure.dart';
+import 'package:car_app_beta/src/features/auth/business/repositories/auth_repository.dart';
 import 'package:car_app_beta/src/features/auth/business/usecases/auth/apple_sign_in.dart';
 import 'package:car_app_beta/src/features/auth/business/usecases/auth/email_register.dart';
 import 'package:car_app_beta/src/features/auth/business/usecases/auth/email_sign_in.dart';
-import 'package:car_app_beta/src/features/auth/business/usecases/auth/google_sign_in%20copy.dart';
 import 'package:car_app_beta/src/features/auth/data/datasources/auth/auth_local_data_source.dart';
 import 'package:car_app_beta/src/features/auth/data/datasources/auth/auth_remote_data_source.dart';
 import 'package:car_app_beta/src/features/auth/data/models/auth_model.dart';
 import 'package:car_app_beta/src/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:dartz/dartz.dart';
 import 'package:data_connection_checker_tv/data_connection_checker.dart';
+import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:http/http.dart' as context;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthenticationProvider extends ChangeNotifier {
@@ -41,7 +40,7 @@ class AuthenticationProvider extends ChangeNotifier {
       ),
     );
 
-    final failureOrAuth = await GoogleSignIN(authRepository: repository).call();
+    final failureOrAuth = await repository.googleSignIn();
 
     failureOrAuth.fold(
       (Failure newFailure) {
@@ -179,7 +178,6 @@ class AuthenticationProvider extends ChangeNotifier {
     try {
       EasyLoading.show();
       await FirebaseAuth.instance.signOut().then((u) {
-        
         Navigator.pushReplacementNamed(context, "/");
       });
       EasyLoading.dismiss();

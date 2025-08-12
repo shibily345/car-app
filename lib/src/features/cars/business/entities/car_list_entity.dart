@@ -18,6 +18,11 @@ class CarEntity extends Equatable {
   final String? sellerId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? type;
+  final String? seats;
+  final bool? isVerified;
+  final bool? isForSale;
+  final bool? isForRent;
 
   const CarEntity({
     this.id,
@@ -37,6 +42,11 @@ class CarEntity extends Equatable {
     this.sellerId,
     this.createdAt,
     this.updatedAt,
+    this.type,
+    this.seats,
+    this.isVerified = false,
+    this.isForSale = false,
+    this.isForRent = false,
   });
 
   @override
@@ -58,7 +68,12 @@ class CarEntity extends Equatable {
       fuel,
       sellerId,
       createdAt,
-      updatedAt
+      updatedAt,
+      type,
+      seats,
+      isVerified,
+      isForSale,
+      isForRent,
     ];
   }
 }

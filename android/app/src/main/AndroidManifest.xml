@@ -2,10 +2,15 @@
   <uses-permission android:name="android.permission.CAMERA"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+  <uses-permission android:name="android.permission.INTERNET"/>
   <application android:requestLegacyExternalStorage="true"
-   android:label="Car Zone Pre-release" 
+   android:label="Car Zone" 
    android:name="${applicationName}" 
    android:icon="@mipmap/launcher_icon">
+    <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyBJPJF2kvkLCgrdMjjw8JvYnho47PR7HWM"/>
   <activity android:name=".MainActivity" 
   android:exported="true" 
   android:launchMode="singleTop" 
@@ -49,5 +54,4 @@
       <action android:name="android.support.customtabs.action.CustomTabsService"/>
     </intent>
   </queries>
-  <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>

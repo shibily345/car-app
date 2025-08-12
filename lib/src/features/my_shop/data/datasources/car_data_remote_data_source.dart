@@ -35,6 +35,7 @@ class CarDataRemoteDataSourceImpl implements CarDataRemoteDataSource {
   @override
   Future<Response> editCarData({required UpdateCarParams params}) async {
     try {
+      debugPrint("params: ${params.data.toJson()}");
       final response = await dio.put(
         '${Ac.baseUrl}/api/car/${params.id}',
         data: params.data.toJson(),

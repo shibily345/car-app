@@ -1,6 +1,8 @@
 import 'package:car_app_beta/core/core_widgets.dart';
+import 'package:car_app_beta/core/constants/constants.dart';
 import 'package:car_app_beta/core/widgets/containers.dart';
 import 'package:car_app_beta/src/extensions.dart';
+import 'package:car_app_beta/src/features/cars/data/models/car_model.dart';
 import 'package:car_app_beta/src/features/my_shop/presentation/providers/update_provider.dart';
 import 'package:flutter/material.dart';
 
@@ -33,22 +35,20 @@ class LocationSec extends StatelessWidget {
 class DescSec extends StatelessWidget {
   const DescSec({
     required this.th,
-    super.key,
     required this.description,
+    super.key,
   });
-
-  final ThemeData th;
   final String description;
+  final ThemeData th;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Ctext(
-            color: Colors.black,
             'Description',
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -144,7 +144,30 @@ class UpDetailsSec extends StatelessWidget {
               children: List<Widget>.generate(details.length, (int index) {
                 return Chip(
                   onDeleted: () {
-                    cp.deleteFet(details[index]);
+                    // Remove feature from the list
+                    final updatedFeatures =
+                        List<String>.from(cp.carData?.features ?? []);
+                    updatedFeatures.removeAt(index);
+                    final updatedCar = CarModel(
+                      id: cp.carData?.id ?? '',
+                      title: cp.carData?.title ?? '',
+                      make: cp.carData?.make ?? '',
+                      model: cp.carData?.model ?? '',
+                      year: cp.carData?.year ?? DateTime.now().year,
+                      color: cp.carData?.color ?? '',
+                      price: cp.carData?.price ?? 0.0,
+                      mileage: cp.carData?.mileage ?? 0,
+                      description: cp.carData?.description ?? '',
+                      features: updatedFeatures,
+                      images: cp.carData?.images ?? [],
+                      location: cp.carData?.location ?? '',
+                      transmission: cp.carData?.transmission ?? '',
+                      fuel: cp.carData?.fuel ?? '',
+                      sellerId: cp.carData?.sellerId ?? '',
+                      createdAt: cp.carData?.createdAt ?? DateTime.now(),
+                      updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+                    );
+                    cp.updateCarData(updatedCar);
                   },
                   label: Text(details[index].toString()),
                   backgroundColor: Colors.lightBlue[100],
@@ -211,7 +234,7 @@ class EditSection extends StatelessWidget {
         subtitle: Ctext(
           title,
           fontSize: 13,
-          color: Theme.of(context).primaryColor.withOpacity(0.5),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
           fontWeight: FontWeight.bold,
         ),
         title: CTextField(

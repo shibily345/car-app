@@ -2,19 +2,19 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:car_app_beta/core/core_widgets.dart';
-import 'package:car_app_beta/core/widgets/text_fields.dart';
+import 'package:car_app_beta/core/constants/constants.dart';
 import 'package:car_app_beta/src/extensions.dart';
-import 'package:car_app_beta/src/features/auth/presentation/providers/user_provider.dart';
+import 'package:car_app_beta/src/features/cars/business/entities/car_list_entity.dart';
 import 'package:car_app_beta/src/features/cars/data/models/car_model.dart';
 import 'package:car_app_beta/src/features/cars/presentation/widgets/detail_sections.dart';
 import 'package:car_app_beta/src/features/my_shop/presentation/providers/update_provider.dart';
-import 'package:car_app_beta/src/widgets/common/ui_helpers.dart';
+import 'package:car_app_beta/src/features/auth/presentation/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class ConfirmationForm extends StatelessWidget {
-  final CarUpdateModel car;
+  final CarModel car;
   const ConfirmationForm({super.key, required this.car});
 
   @override
@@ -39,21 +39,43 @@ class ConfirmationForm extends StatelessWidget {
               mainAxisSpacing: 5,
               crossAxisCount: 2,
             ),
-            itemCount: car.images.length,
+            itemCount: car.images?.length ?? 0,
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 margin: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                     color: Theme.of(context).splashColor,
                     image: DecorationImage(
-                        image: FileImage(File(car.images[index])))),
+                        image: FileImage(File(car.images![index])))),
                 height: 120,
                 width: 120,
                 child: IconButton(
                     onPressed: () {
+                      // Remove image from the list
+                      final updatedImages = List<String>.from(car.images ?? []);
+                      updatedImages.removeAt(index);
+                      final updatedCar = CarModel(
+                        id: car.id ?? '',
+                        title: car.title ?? '',
+                        make: car.make ?? '',
+                        model: car.model ?? '',
+                        year: car.year ?? DateTime.now().year,
+                        color: car.color ?? '',
+                        price: car.price ?? 0.0,
+                        mileage: car.mileage ?? 0,
+                        description: car.description ?? '',
+                        features: car.features ?? [],
+                        images: updatedImages,
+                        location: car.location ?? '',
+                        transmission: car.transmission ?? '',
+                        fuel: car.fuel ?? '',
+                        sellerId: car.sellerId ?? '',
+                        createdAt: car.createdAt ?? DateTime.now(),
+                        updatedAt: car.updatedAt ?? DateTime.now(),
+                      );
                       context
                           .read<CarCreateProvider>()
-                          .deleteImage(car.images[index]);
+                          .updateCarData(updatedCar);
                     },
                     icon: const Icon(Icons.delete)),
               );
@@ -63,53 +85,53 @@ class ConfirmationForm extends StatelessWidget {
         const ThickDevider(),
         SubSec(
           title: "Price ",
-          name: car.price.toString(),
+          name: (car.price ?? 0.0).toString(),
         ),
 
         SubSec(
           title: "Make ",
-          name: car.make,
+          name: car.make ?? '',
         ),
 
         SubSec(
           title: "Model ",
-          name: car.model,
+          name: car.model ?? '',
         ),
 
         SubSec(
           title: "Year ",
-          name: car.year.toString(),
+          name: (car.year ?? DateTime.now().year).toString(),
         ),
 
         SubSec(
           title: "Milage ",
-          name: car.mileage.toString(),
+          name: (car.mileage ?? 0).toString(),
         ),
 
         SubSec(
           title: "Transmission ",
-          name: car.transmission,
+          name: car.transmission ?? '',
         ),
 
         SubSec(
           title: "Fuel ",
-          name: car.fuel,
+          name: car.fuel ?? '',
         ),
 
         SubSec(
           title: "Location ",
-          name: car.location,
+          name: car.location ?? '',
         ),
 
         const ThickDevider(),
         DetailsSec(
           th: th,
-          details: car.features,
+          details: car.features ?? [],
         ),
         const ThickDevider(),
         DescSec(
           th: th,
-          description: car.description,
+          description: car.description ?? '',
         ),
         Consumer2<CarCreateProvider, UserProvider>(
             builder: (context, cp, up, _) {
@@ -119,28 +141,30 @@ class ConfirmationForm extends StatelessWidget {
               icon: Icons.done,
               label: "Confirm",
               onPressed: () async {
-                List<String> images = await cp.uploadImages(cp.carData!.images);
+                List<String> images =
+                    await cp.uploadImages(cp.carData?.images ?? []);
 
                 print('New images: $images');
                 cp.eitherFailureOrCarData(
+                    context: context,
                     value: CarModel(
                         id: const Uuid().v7(),
                         title:
-                            "${car.make} ${car.model} ${car.year} ${car.location}",
-                        make: car.make,
-                        model: car.model,
-                        year: car.year,
-                        color: car.color,
-                        price: car.price,
-                        mileage: car.mileage,
-                        description: car.description,
-                        features: car.features,
-                        images: car.images,
-                        location: car.location,
-                        transmission: car.transmission,
-                        fuel: car.fuel,
-                        sellerId: up.firebaseUser!.uid,
-                        createdAt: car.createdAt,
+                            "${car.make ?? ''} ${car.model ?? ''} ${car.year ?? DateTime.now().year} ${car.location ?? ''}",
+                        make: car.make ?? '',
+                        model: car.model ?? '',
+                        year: car.year ?? DateTime.now().year,
+                        color: car.color ?? '',
+                        price: car.price ?? 0.0,
+                        mileage: car.mileage ?? 0,
+                        description: car.description ?? '',
+                        features: car.features ?? [],
+                        images: car.images ?? [],
+                        location: car.location ?? '',
+                        transmission: car.transmission ?? '',
+                        fuel: car.fuel ?? '',
+                        sellerId: up.firebaseUser?.uid ?? '',
+                        createdAt: car.createdAt ?? DateTime.now(),
                         updatedAt: DateTime.now()));
                 Navigator.popAndPushNamed(context, "/");
               },
@@ -186,19 +210,43 @@ class ImageUploadForm extends StatelessWidget {
                   mainAxisSpacing: 5,
                   crossAxisCount: 2,
                 ),
-                itemCount: cp.carData!.images.length,
+                itemCount: cp.carData?.images?.length ?? 0,
                 itemBuilder: (BuildContext context, int index) {
                   return Container(
                     margin: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
                         color: Theme.of(context).splashColor,
                         image: DecorationImage(
-                            image: FileImage(File(cp.carData!.images[index])))),
+                            image:
+                                FileImage(File(cp.carData!.images![index])))),
                     height: 120,
                     width: 120,
                     child: IconButton(
                         onPressed: () {
-                          cp.deleteImage(cp.carData!.images[index]);
+                          // Remove image from the list
+                          final updatedImages =
+                              List<String>.from(cp.carData!.images ?? []);
+                          updatedImages.removeAt(index);
+                          final updatedCar = CarModel(
+                            id: cp.carData!.id ?? '',
+                            title: cp.carData!.title ?? '',
+                            make: cp.carData!.make ?? '',
+                            model: cp.carData!.model ?? '',
+                            year: cp.carData!.year ?? DateTime.now().year,
+                            color: cp.carData!.color ?? '',
+                            price: cp.carData!.price ?? 0.0,
+                            mileage: cp.carData!.mileage ?? 0,
+                            description: cp.carData!.description ?? '',
+                            features: cp.carData!.features ?? [],
+                            images: updatedImages,
+                            location: cp.carData!.location ?? '',
+                            transmission: cp.carData!.transmission ?? '',
+                            fuel: cp.carData!.fuel ?? '',
+                            sellerId: cp.carData!.sellerId ?? '',
+                            createdAt: cp.carData!.createdAt ?? DateTime.now(),
+                            updatedAt: cp.carData!.updatedAt ?? DateTime.now(),
+                          );
+                          cp.updateCarData(updatedCar);
                         },
                         icon: const Icon(Icons.delete)),
                   );
@@ -212,8 +260,8 @@ class ImageUploadForm extends StatelessWidget {
   }
 }
 
-class LocationForm extends StatelessWidget {
-  const LocationForm({
+class LocationPriceForm extends StatelessWidget {
+  const LocationPriceForm({
     super.key,
   });
 
@@ -226,15 +274,60 @@ class LocationForm extends StatelessWidget {
         children: [
           CTextField(
             labelText: 'Location',
-            onChanged: (value) =>
-                context.read<CarCreateProvider>().updateLocation(value),
+            onChanged: (value) {
+              final cp = context.read<CarCreateProvider>();
+              if (cp.carData != null) {
+                final updatedCar = CarModel(
+                  id: cp.carData!.id ?? '',
+                  title: cp.carData!.title ?? '',
+                  make: cp.carData!.make ?? '',
+                  model: cp.carData!.model ?? '',
+                  year: cp.carData!.year ?? DateTime.now().year,
+                  color: cp.carData!.color ?? '',
+                  price: cp.carData!.price ?? 0.0,
+                  mileage: cp.carData!.mileage ?? 0,
+                  description: cp.carData!.description ?? '',
+                  features: cp.carData!.features ?? [],
+                  images: cp.carData!.images ?? [],
+                  location: value,
+                  transmission: cp.carData!.transmission ?? '',
+                  fuel: cp.carData!.fuel ?? '',
+                  sellerId: cp.carData!.sellerId ?? '',
+                  createdAt: cp.carData!.createdAt ?? DateTime.now(),
+                  updatedAt: cp.carData!.updatedAt ?? DateTime.now(),
+                );
+                cp.updateCarData(updatedCar);
+              }
+            },
           ),
           CTextField(
             keyboardType: const TextInputType.numberWithOptions(),
             labelText: 'Price',
-            onChanged: (value) => context.read<CarCreateProvider>().updatePrice(
-                  double.parse(value),
-                ),
+            onChanged: (value) {
+              final cp = context.read<CarCreateProvider>();
+              if (cp.carData != null) {
+                final updatedCar = CarModel(
+                  id: cp.carData!.id ?? '',
+                  title: cp.carData!.title ?? '',
+                  make: cp.carData!.make ?? '',
+                  model: cp.carData!.model ?? '',
+                  year: cp.carData!.year ?? DateTime.now().year,
+                  color: cp.carData!.color ?? '',
+                  price: double.tryParse(value) ?? 0.0,
+                  mileage: cp.carData!.mileage ?? 0,
+                  description: cp.carData!.description ?? '',
+                  features: cp.carData!.features ?? [],
+                  images: cp.carData!.images ?? [],
+                  location: cp.carData!.location ?? '',
+                  transmission: cp.carData!.transmission ?? '',
+                  fuel: cp.carData!.fuel ?? '',
+                  sellerId: cp.carData!.sellerId ?? '',
+                  createdAt: cp.carData!.createdAt ?? DateTime.now(),
+                  updatedAt: cp.carData!.updatedAt ?? DateTime.now(),
+                );
+                cp.updateCarData(updatedCar);
+              }
+            },
           ),
         ],
       ),
@@ -253,28 +346,30 @@ class CarDetailForm extends StatelessWidget {
   });
 
   void _validateAndProceed(BuildContext context) {
-    final carData = cp.carData!;
-    if (carData.make.isEmpty) {
+    final carData = cp.carData;
+    if (carData == null) return;
+
+    if ((carData.make ?? '').isEmpty) {
       _showErrorDialog(context, 'Please select a car make.');
       return;
     }
-    if (carData.model.isEmpty) {
+    if ((carData.model ?? '').isEmpty) {
       _showErrorDialog(context, 'Please select a car model.');
       return;
     }
-    if (carData.mileage <= 0) {
+    if ((carData.mileage ?? 0) <= 0) {
       _showErrorDialog(context, 'Please enter a valid mileage.');
       return;
     }
-    if (carData.description.isEmpty) {
+    if ((carData.description ?? '').isEmpty) {
       _showErrorDialog(context, 'Please provide a description.');
       return;
     }
-    if (carData.transmission.isEmpty) {
+    if ((carData.transmission ?? '').isEmpty) {
       _showErrorDialog(context, 'Please select a transmission type.');
       return;
     }
-    if (carData.fuel.isEmpty) {
+    if ((carData.fuel ?? '').isEmpty) {
       _showErrorDialog(context, 'Please select a fuel type.');
       return;
     }
@@ -340,7 +435,28 @@ class CarDetailForm extends StatelessWidget {
                     label: 'Make',
                     hint: 'Enter your vehicle\'s brand',
                     options: brands,
-                    onSelected: cp.updateMake,
+                    onSelected: (value) {
+                      final updatedCar = CarModel(
+                        id: cp.carData?.id ?? '',
+                        title: cp.carData?.title ?? '',
+                        make: value,
+                        model: cp.carData?.model ?? '',
+                        year: cp.carData?.year ?? DateTime.now().year,
+                        color: cp.carData?.color ?? '',
+                        price: cp.carData?.price ?? 0.0,
+                        mileage: cp.carData?.mileage ?? 0,
+                        description: cp.carData?.description ?? '',
+                        features: cp.carData?.features ?? [],
+                        images: cp.carData?.images ?? [],
+                        location: cp.carData?.location ?? '',
+                        transmission: cp.carData?.transmission ?? '',
+                        fuel: cp.carData?.fuel ?? '',
+                        sellerId: cp.carData?.sellerId ?? '',
+                        createdAt: cp.carData?.createdAt ?? DateTime.now(),
+                        updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+                      );
+                      cp.updateCarData(updatedCar);
+                    },
                   ),
                   _buildModelAutocomplete(jsonData),
                 ],
@@ -353,23 +469,107 @@ class CarDetailForm extends StatelessWidget {
             label: 'KM Driven',
             hint: '13000+',
             keyboardType: TextInputType.number,
-            onChanged: (value) => cp.updateMileage(int.tryParse(value) ?? 0),
+            onChanged: (value) {
+              final updatedCar = CarModel(
+                id: cp.carData?.id ?? '',
+                title: cp.carData?.title ?? '',
+                make: cp.carData?.make ?? '',
+                model: cp.carData?.model ?? '',
+                year: cp.carData?.year ?? DateTime.now().year,
+                color: cp.carData?.color ?? '',
+                price: cp.carData?.price ?? 0.0,
+                mileage: int.tryParse(value) ?? 0,
+                description: cp.carData?.description ?? '',
+                features: cp.carData?.features ?? [],
+                images: cp.carData?.images ?? [],
+                location: cp.carData?.location ?? '',
+                transmission: cp.carData?.transmission ?? '',
+                fuel: cp.carData?.fuel ?? '',
+                sellerId: cp.carData?.sellerId ?? '',
+                createdAt: cp.carData?.createdAt ?? DateTime.now(),
+                updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+              );
+              cp.updateCarData(updatedCar);
+            },
           ),
           _buildTextField(
             label: 'Description',
             hint: 'A detailed description',
             keyboardType: TextInputType.multiline,
-            onChanged: cp.updateDescription,
+            onChanged: (value) {
+              final updatedCar = CarModel(
+                id: cp.carData?.id ?? '',
+                title: cp.carData?.title ?? '',
+                make: cp.carData?.make ?? '',
+                model: cp.carData?.model ?? '',
+                year: cp.carData?.year ?? DateTime.now().year,
+                color: cp.carData?.color ?? '',
+                price: cp.carData?.price ?? 0.0,
+                mileage: cp.carData?.mileage ?? 0,
+                description: value,
+                features: cp.carData?.features ?? [],
+                images: cp.carData?.images ?? [],
+                location: cp.carData?.location ?? '',
+                transmission: cp.carData?.transmission ?? '',
+                fuel: cp.carData?.fuel ?? '',
+                sellerId: cp.carData?.sellerId ?? '',
+                createdAt: cp.carData?.createdAt ?? DateTime.now(),
+                updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+              );
+              cp.updateCarData(updatedCar);
+            },
           ),
           _buildDropdown(
             label: 'Transmission',
             items: const ['Manual', 'Automatic', 'Hybrid'],
-            onChanged: cp.updateTransmission,
+            onChanged: (value) {
+              final updatedCar = CarModel(
+                id: cp.carData?.id ?? '',
+                title: cp.carData?.title ?? '',
+                make: cp.carData?.make ?? '',
+                model: cp.carData?.model ?? '',
+                year: cp.carData?.year ?? DateTime.now().year,
+                color: cp.carData?.color ?? '',
+                price: cp.carData?.price ?? 0.0,
+                mileage: cp.carData?.mileage ?? 0,
+                description: cp.carData?.description ?? '',
+                features: cp.carData?.features ?? [],
+                images: cp.carData?.images ?? [],
+                location: cp.carData?.location ?? '',
+                transmission: value,
+                fuel: cp.carData?.fuel ?? '',
+                sellerId: cp.carData?.sellerId ?? '',
+                createdAt: cp.carData?.createdAt ?? DateTime.now(),
+                updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+              );
+              cp.updateCarData(updatedCar);
+            },
           ),
           _buildDropdown(
             label: 'Fuel',
             items: const ['Diesel', 'Petrol', 'Electric', 'Hybrid', 'CNG'],
-            onChanged: cp.updateFuel,
+            onChanged: (value) {
+              final updatedCar = CarModel(
+                id: cp.carData?.id ?? '',
+                title: cp.carData?.title ?? '',
+                make: cp.carData?.make ?? '',
+                model: cp.carData?.model ?? '',
+                year: cp.carData?.year ?? DateTime.now().year,
+                color: cp.carData?.color ?? '',
+                price: cp.carData?.price ?? 0.0,
+                mileage: cp.carData?.mileage ?? 0,
+                description: cp.carData?.description ?? '',
+                features: cp.carData?.features ?? [],
+                images: cp.carData?.images ?? [],
+                location: cp.carData?.location ?? '',
+                transmission: cp.carData?.transmission ?? '',
+                fuel: value,
+                sellerId: cp.carData?.sellerId ?? '',
+                createdAt: cp.carData?.createdAt ?? DateTime.now(),
+                updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+              );
+              cp.updateCarData(updatedCar);
+            },
           ),
           const SizedBox(height: 20),
           ElevatedButton(
@@ -407,10 +607,10 @@ class CarDetailForm extends StatelessWidget {
   }
 
   Widget _buildModelAutocomplete(List<dynamic> jsonData) {
-    List<String> models = cp.carData!.make.isNotEmpty
+    List<String> models = (cp.carData?.make ?? '').isNotEmpty
         ? jsonData
             .firstWhere(
-              (brandData) => brandData['brand'] == cp.carData!.make,
+              (brandData) => brandData['brand'] == cp.carData?.make,
               orElse: () => {'models': []},
             )['models']
             .cast<String>()
@@ -420,7 +620,28 @@ class CarDetailForm extends StatelessWidget {
       label: 'Model',
       hint: 'Enter car model',
       options: models,
-      onSelected: cp.updateModel,
+      onSelected: (value) {
+        final updatedCar = CarModel(
+          id: cp.carData?.id ?? '',
+          title: cp.carData?.title ?? '',
+          make: cp.carData?.make ?? '',
+          model: value,
+          year: cp.carData?.year ?? DateTime.now().year,
+          color: cp.carData?.color ?? '',
+          price: cp.carData?.price ?? 0.0,
+          mileage: cp.carData?.mileage ?? 0,
+          description: cp.carData?.description ?? '',
+          features: cp.carData?.features ?? [],
+          images: cp.carData?.images ?? [],
+          location: cp.carData?.location ?? '',
+          transmission: cp.carData?.transmission ?? '',
+          fuel: cp.carData?.fuel ?? '',
+          sellerId: cp.carData?.sellerId ?? '',
+          createdAt: cp.carData?.createdAt ?? DateTime.now(),
+          updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+        );
+        cp.updateCarData(updatedCar);
+      },
     );
   }
 
@@ -452,7 +673,26 @@ class CarDetailForm extends StatelessWidget {
         );
 
         if (selectedYear != null) {
-          cp.updateYear(selectedYear);
+          final updatedCar = CarModel(
+            id: cp.carData?.id ?? '',
+            title: cp.carData?.title ?? '',
+            make: cp.carData?.make ?? '',
+            model: cp.carData?.model ?? '',
+            year: selectedYear,
+            color: cp.carData?.color ?? '',
+            price: cp.carData?.price ?? 0.0,
+            mileage: cp.carData?.mileage ?? 0,
+            description: cp.carData?.description ?? '',
+            features: cp.carData?.features ?? [],
+            images: cp.carData?.images ?? [],
+            location: cp.carData?.location ?? '',
+            transmission: cp.carData?.transmission ?? '',
+            fuel: cp.carData?.fuel ?? '',
+            sellerId: cp.carData?.sellerId ?? '',
+            createdAt: cp.carData?.createdAt ?? DateTime.now(),
+            updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+          );
+          cp.updateCarData(updatedCar);
         }
       },
       child: AbsorbPointer(
@@ -460,7 +700,7 @@ class CarDetailForm extends StatelessWidget {
           label: 'Year',
           hint: '2016*',
           controller: TextEditingController(
-            text: cp.carData!.year.toString(),
+            text: (cp.carData?.year ?? DateTime.now().year).toString(),
           ),
         ),
       ),
@@ -518,16 +758,35 @@ class FeturesForm extends StatelessWidget {
               child: Wrap(
                 spacing: 8.0, // gap between adjacent chips
                 runSpacing: 4.0, // gap between lines
-                children: List<Widget>.generate(cp.carData!.features.length,
-                    (int index) {
+                children: List<Widget>.generate(
+                    cp.carData?.features?.length ?? 0, (int index) {
                   return Chip(
                     onDeleted: () {
-                      cp.deleteFet(cp.carData!.features[index]);
+                      final updatedFeatures =
+                          List<String>.from(cp.carData?.features ?? []);
+                      updatedFeatures.removeAt(index);
+                      final updatedCar = CarModel(
+                        id: cp.carData?.id ?? '',
+                        title: cp.carData?.title ?? '',
+                        make: cp.carData?.make ?? '',
+                        model: cp.carData?.model ?? '',
+                        year: cp.carData?.year ?? DateTime.now().year,
+                        color: cp.carData?.color ?? '',
+                        price: cp.carData?.price ?? 0.0,
+                        mileage: cp.carData?.mileage ?? 0,
+                        description: cp.carData?.description ?? '',
+                        features: updatedFeatures,
+                        images: cp.carData?.images ?? [],
+                        location: cp.carData?.location ?? '',
+                        transmission: cp.carData?.transmission ?? '',
+                        fuel: cp.carData?.fuel ?? '',
+                        sellerId: cp.carData?.sellerId ?? '',
+                        createdAt: cp.carData?.createdAt ?? DateTime.now(),
+                        updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+                      );
+                      cp.updateCarData(updatedCar);
                     },
-                    label: Text(context
-                        .watch<CarCreateProvider>()
-                        .carData!
-                        .features[index]),
+                    label: Text(cp.carData?.features?[index] ?? ''),
                     backgroundColor: Colors.lightBlue[100],
                   );
                 }),
@@ -544,9 +803,34 @@ class FeturesForm extends StatelessWidget {
                       hintText: 'Panoramic Roof',
                     )),
                 FloatingActionButton(
+                  heroTag: "addFeatureWidgetFAB",
                   onPressed: () {
-                    cp.addFeature(fc.text);
-                    fc.clear();
+                    if (fc.text.isNotEmpty) {
+                      final updatedFeatures =
+                          List<String>.from(cp.carData?.features ?? []);
+                      updatedFeatures.add(fc.text);
+                      final updatedCar = CarModel(
+                        id: cp.carData?.id ?? '',
+                        title: cp.carData?.title ?? '',
+                        make: cp.carData?.make ?? '',
+                        model: cp.carData?.model ?? '',
+                        year: cp.carData?.year ?? DateTime.now().year,
+                        color: cp.carData?.color ?? '',
+                        price: cp.carData?.price ?? 0.0,
+                        mileage: cp.carData?.mileage ?? 0,
+                        description: cp.carData?.description ?? '',
+                        features: updatedFeatures,
+                        images: cp.carData?.images ?? [],
+                        location: cp.carData?.location ?? '',
+                        transmission: cp.carData?.transmission ?? '',
+                        fuel: cp.carData?.fuel ?? '',
+                        sellerId: cp.carData?.sellerId ?? '',
+                        createdAt: cp.carData?.createdAt ?? DateTime.now(),
+                        updatedAt: cp.carData?.updatedAt ?? DateTime.now(),
+                      );
+                      cp.updateCarData(updatedCar);
+                      fc.clear();
+                    }
                   },
                   elevation: 0,
                   child: const Icon(Icons.add),

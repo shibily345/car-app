@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../core/connection/network_info.dart';
 import '../../../../../core/errors/failure.dart';
+import '../../../../../src/core/service_locator.dart';
 
 class CarsProvider extends ChangeNotifier {
   List<CarEntity>? cars;
@@ -53,15 +54,10 @@ class CarsProvider extends ChangeNotifier {
   }
 
   Future<Either<Failure, List<CarModel>>> eitherFailureOrCars() async {
-    CarListRepositoryImpl repository = CarListRepositoryImpl(
-      remoteDataSource: CarListRemoteDataSourceImpl(dio: Dio()),
-      localDataSource: CarListLocalDataSourceImpl(
-          sharedPreferences: await SharedPreferences.getInstance()),
-      networkInfo: NetworkInfoImpl(DataConnectionChecker()),
-    );
+    // Use the service locator to get the use case
+    final getCarListUseCase = getIt<GetCarList>();
 
-    final failureOrCars =
-        await GetCarList(carListRepository: repository).call();
+    final failureOrCars = await getCarListUseCase.call();
 
     failureOrCars.fold(
       (newFailure) {
@@ -97,7 +93,9 @@ class CarsProvider extends ChangeNotifier {
     });
 
     try {
-      Response response = await Dio().post(
+      // Use the Dio instance from service locator
+      final dio = getIt<Dio>();
+      Response response = await dio.post(
         "http://your-server-ip:3000/upload", // Replace with your server IP
         data: formData,
         options: Options(

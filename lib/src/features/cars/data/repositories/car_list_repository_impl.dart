@@ -25,7 +25,7 @@ class CarListRepositoryImpl implements CarListRepository {
         final remoteCarList = await remoteDataSource.getCarList();
 
         await localDataSource.cacheCarList(
-          carListToCache: remoteCarList as List<CarModel>,
+          carListToCache: remoteCarList,
         );
 
         return Right(remoteCarList);
@@ -35,7 +35,7 @@ class CarListRepositoryImpl implements CarListRepository {
     } else {
       try {
         final localCarList = await localDataSource.getLastCarList();
-        return Right(localCarList as List<CarModel>);
+        return Right(localCarList);
       } on CacheException {
         return Left(CacheFailure(errorMessage: 'This is a cache exception'));
       }

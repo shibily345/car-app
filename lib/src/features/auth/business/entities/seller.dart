@@ -7,6 +7,8 @@ class SellerEntity {
   final String dealershipName;
   final String location;
   final String contactNumber;
+  final double? latitude;
+  final double? longitude;
 
   const SellerEntity({
     required this.uid,
@@ -17,5 +19,7 @@ class SellerEntity {
     required this.photoURL,
     required this.dealershipName,
     required this.contactNumber,
+    this.latitude,
+    this.longitude,
   });
 }

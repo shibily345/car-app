@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class CarListLocalDataSource {
   Future<void> cacheCarList({required List<CarModel>? carListToCache});
-  Future<dynamic> getLastCarList();
+  Future<List<CarModel>> getLastCarList();
 }
 
 const cachedCarList = 'carList';
@@ -16,11 +16,14 @@ class CarListLocalDataSourceImpl implements CarListLocalDataSource {
   final SharedPreferences sharedPreferences;
 
   @override
-  Future<dynamic> getLastCarList() {
+  Future<List<CarModel>> getLastCarList() {
     final jsonString = sharedPreferences.getString(cachedCarList);
 
     if (jsonString != null) {
-      return Future.value(List<CarModel>);
+      final List<dynamic> jsonList = json.decode(jsonString);
+      return Future.value(
+        jsonList.map((json) => CarModel.fromJson(json)).toList(),
+      );
     } else {
       throw CacheException();
     }

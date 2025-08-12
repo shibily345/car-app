@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class CustomButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
+  final Widget? child;
   final IconData? prefixIcon;
   final IconData? suffixIcon;
   final double? width;
@@ -28,6 +29,7 @@ class CustomButton extends StatelessWidget {
     super.key,
     required this.label,
     this.onPressed,
+    this.child,
     this.prefixIcon,
     this.suffixIcon,
     this.width,
@@ -95,36 +97,37 @@ class CustomButton extends StatelessWidget {
                       : null),
               boxShadow: boxShadow,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: mainAxisSize,
-              children: [
-                if (isLoading) ...[
-                  loadingWidget ?? defaultLoadingWidget,
-                ] else ...[
-                  if (prefixIcon != null) ...[
-                    Icon(
-                      prefixIcon,
-                      color: effectiveForegroundColor,
-                      size: iconSize,
-                    ),
-                    SizedBox(width: iconSpacing),
+            child: child ??
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: mainAxisSize,
+                  children: [
+                    if (isLoading) ...[
+                      loadingWidget ?? defaultLoadingWidget,
+                    ] else ...[
+                      if (prefixIcon != null) ...[
+                        Icon(
+                          prefixIcon,
+                          color: effectiveForegroundColor,
+                          size: iconSize,
+                        ),
+                        SizedBox(width: iconSpacing),
+                      ],
+                      Text(
+                        label,
+                        style: effectiveTextStyle,
+                      ),
+                      if (suffixIcon != null) ...[
+                        SizedBox(width: iconSpacing),
+                        Icon(
+                          suffixIcon,
+                          color: effectiveForegroundColor,
+                          size: iconSize,
+                        ),
+                      ],
+                    ],
                   ],
-                  Text(
-                    label,
-                    style: effectiveTextStyle,
-                  ),
-                  if (suffixIcon != null) ...[
-                    SizedBox(width: iconSpacing),
-                    Icon(
-                      suffixIcon,
-                      color: effectiveForegroundColor,
-                      size: iconSize,
-                    ),
-                  ],
-                ],
-              ],
-            ),
+                ),
           ),
         ),
       ),

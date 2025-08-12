@@ -1,14 +1,16 @@
 import 'package:car_app_beta/core/routes/routes.dart';
 import 'package:car_app_beta/core/theme/app_themes.dart';
+import 'package:car_app_beta/src/core/service_locator.dart';
 import 'package:car_app_beta/src/features/auth/presentation/providers/auth_provider.dart';
 import 'package:car_app_beta/src/features/auth/presentation/providers/user_provider.dart';
 import 'package:car_app_beta/src/features/cars/presentation/providers/cars_provider.dart';
 import 'package:car_app_beta/src/features/my_shop/presentation/providers/update_provider.dart';
+import 'package:car_app_beta/src/features/rental/presentation/providers/rental_provider.dart';
+import 'package:car_app_beta/src/features/sale/presentation/providers/sale_provider.dart';
+import 'package:car_app_beta/src/features/settings/settings_controller.dart';
 import 'package:car_app_beta/src/localization/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +21,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Initialize EasyLoading
     EasyLoading.instance
       ..maskType = EasyLoadingMaskType.black
       ..loadingStyle = EasyLoadingStyle.custom
@@ -45,6 +48,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => UserProvider()..loadUser(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => getIt<RentalProvider>(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => getIt<SaleProvider>(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SettingsProvider()..loadLocale(),
+        ),
       ],
       child: ScreenUtilInit(
         designSize: const Size(430, 932), // Set your design size here
@@ -52,12 +64,7 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             restorationScopeId: 'app',
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
+
             builder: EasyLoading.init(
               builder: (context, widget) {
                 return MediaQuery(
@@ -68,8 +75,7 @@ class MyApp extends StatelessWidget {
               },
             ),
             supportedLocales: L10n.all,
-            onGenerateTitle: (BuildContext context) =>
-                AppLocalizations.of(context)!.appTitle,
+
             theme: lightTheme(context),
             // darkTheme: darkTheme(context),
             onGenerateRoute: AppRoutes.onGenerateRoutes,

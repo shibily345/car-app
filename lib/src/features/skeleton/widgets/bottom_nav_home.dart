@@ -5,6 +5,7 @@ import 'package:car_app_beta/src/features/cars/presentation/pages/search/search.
 import 'package:car_app_beta/src/features/home/home_page.dart';
 import 'package:car_app_beta/src/features/skeleton/model/nav_item_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:rive/rive.dart' as rive;
 
 class SkeletonNav extends StatefulWidget {
@@ -15,12 +16,41 @@ class SkeletonNav extends StatefulWidget {
 }
 
 class _SkeletonNavState extends State<SkeletonNav> {
-  // int _selectedIndex = 0;
   final PageController _pageController = PageController();
 
   List<rive.SMIBool> riveIconInputs = [];
   List<rive.StateMachineController?> controllers = [];
   int selctedNavIndex = 0;
+
+  // Added for scroll-to-hide functionality
+  late ScrollController _scrollController;
+  bool _isNavBarVisible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_handleScroll);
+  }
+
+  void _handleScroll() {
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse) {
+      if (_isNavBarVisible) {
+        setState(() {
+          _isNavBarVisible = false;
+        });
+      }
+    }
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.forward) {
+      if (!_isNavBarVisible) {
+        setState(() {
+          _isNavBarVisible = true;
+        });
+      }
+    }
+  }
 
   void animateTheIcon(int index) {
     riveIconInputs[index].change(true);
@@ -45,6 +75,8 @@ class _SkeletonNavState extends State<SkeletonNav> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_handleScroll);
+    _scrollController.dispose();
     for (var controller in controllers) {
       controller?.dispose();
     }
@@ -56,26 +88,27 @@ class _SkeletonNavState extends State<SkeletonNav> {
     var th = Theme.of(context);
     bool isLight = th.brightness == Brightness.light;
     return Scaffold(
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: (index) {
-            setState(() {
-              // _selectedIndex = index;
-              selctedNavIndex = index;
-            });
-          },
-          children: const [
-            HomePage(),
-            SearchPage(),
-            // const SearchPage(),
-            FavoritePage(),
-            ProfilePage(),
-            // HabitStatisticsPage(),
-            // NewHabitPage(),
-            // SettingsPage(),
-          ],
-        ),
-        bottomSheet: Padding(
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            selctedNavIndex = index;
+          });
+        },
+        // IMPORTANT: Pass the scroll controller to your pages.
+        // Your pages must use this controller in their primary scrollable widget.
+        children: [
+          HomePage(scrollController: _scrollController),
+          SearchPage(scrollController: _scrollController),
+          FavoritePage(scrollController: _scrollController),
+          ProfilePage(scrollController: _scrollController),
+        ],
+      ),
+      bottomSheet: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        transform: Matrix4.translationValues(
+            0, _isNavBarVisible ? 0 : 120, 0), // Hides/shows the nav bar
+        child: Padding(
           padding: const EdgeInsets.only(bottom: 30.0),
           child: Container(
             decoration: BoxDecoration(
@@ -95,7 +128,7 @@ class _SkeletonNavState extends State<SkeletonNav> {
                 colors: isLight
                     ? [
                         const Color.fromARGB(255, 255, 255, 255),
-                        const Color.fromARGB(255, 255, 215, 215)
+                        const Color.fromARGB(255, 210, 231, 255)
                       ]
                     : [
                         const Color.fromARGB(255, 38, 60, 81),
@@ -105,14 +138,10 @@ class _SkeletonNavState extends State<SkeletonNav> {
                 end: Alignment.bottomRight,
               ),
             ),
-
             height: 70,
             width: MediaQuery.of(context).size.width * 0.9,
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.symmetric(horizontal: 24),
-
-            // ],
-            // ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
@@ -164,7 +193,9 @@ class _SkeletonNavState extends State<SkeletonNav> {
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 

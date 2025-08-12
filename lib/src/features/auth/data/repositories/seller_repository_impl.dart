@@ -8,6 +8,7 @@ import 'package:car_app_beta/src/features/auth/data/datasources/seller/seller_re
 import 'package:car_app_beta/src/features/auth/data/models/seller.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/src/response.dart';
+import 'package:flutter/foundation.dart';
 
 class SellerRepositoryImpl implements SellerRepository {
   final SellerRemoteDataSource remoteDataSource;
@@ -69,15 +70,24 @@ class SellerRepositoryImpl implements SellerRepository {
   Future<Either<Failure, Response>> updateSeller(
       {required AddSellerParams params}) async {
     try {
+      debugPrint("Repository: Starting seller update");
       Response remoteSeller =
           await remoteDataSource.updateSeller(params: params);
+
+      debugPrint(
+          "Repository: Seller update response - ${remoteSeller.statusCode} - ${remoteSeller.statusMessage}");
+      debugPrint("Repository: Response data - ${remoteSeller.data}");
 
       // localDataSource.cacheSeller(
       //     authToCache: UserModel.fromFirebaseUser(remoteSeller.user!));
 
       return Right(remoteSeller);
-    } on ServerException {
+    } on ServerException catch (e) {
+      debugPrint("Repository: ServerException caught - $e");
       return Left(ServerFailure(errorMessage: 'This is a server exception'));
+    } catch (e) {
+      debugPrint("Repository: Unexpected error - $e");
+      return Left(ServerFailure(errorMessage: 'Unexpected error: $e'));
     }
   }
 

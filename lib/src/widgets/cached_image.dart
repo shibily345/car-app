@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 
 class CachedImageWithShimmer extends StatelessWidget {
@@ -47,16 +48,14 @@ class CachedImageWithShimmer extends StatelessWidget {
         ),
       ),
       errorWidget: (context, url, error) => Container(
+          width: 200,
+          height: 120.h,
           decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withAlpha(80),
-              borderRadius: BorderRadius.circular(20)),
-          height: height,
-          width: width,
-          child: const Center(
-            child: Icon(
-              Icons.error_outline_rounded,
-              size: 30,
-            ),
+            color: Colors.grey.shade200,
+          ),
+          child: const Icon(
+            Icons.error_outline_rounded,
+            size: 30,
           )),
     );
   }

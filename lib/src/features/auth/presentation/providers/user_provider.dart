@@ -1,18 +1,19 @@
 import 'dart:io';
 
-import 'package:car_app_beta/core/connection/network_info.dart';
 import 'package:car_app_beta/core/constants/constants.dart';
 import 'package:car_app_beta/core/errors/failure.dart';
 import 'package:car_app_beta/core/params/params.dart';
-import 'package:car_app_beta/src/features/auth/business/usecases/seller/edit_seller.dart';
-import 'package:car_app_beta/src/features/auth/business/usecases/seller/get_all.dart';
-import 'package:car_app_beta/src/features/auth/business/usecases/seller/get_seller.dart';
 import 'package:car_app_beta/src/features/auth/business/usecases/seller/update_seller.dart';
-import 'package:car_app_beta/src/features/auth/data/datasources/seller/seller_local_data_source.dart';
+import 'package:car_app_beta/src/features/auth/business/usecases/seller/get_seller.dart';
+import 'package:car_app_beta/src/features/auth/business/usecases/seller/get_all.dart';
+import 'package:car_app_beta/src/features/auth/business/usecases/seller/edit_seller.dart';
 import 'package:car_app_beta/src/features/auth/data/datasources/seller/seller_remote_data_source.dart';
-import 'package:car_app_beta/src/features/auth/data/models/auth_model.dart';
+import 'package:car_app_beta/src/features/auth/data/datasources/seller/seller_local_data_source.dart';
 import 'package:car_app_beta/src/features/auth/data/models/seller.dart';
+import 'package:car_app_beta/src/features/auth/data/models/auth_model.dart';
 import 'package:car_app_beta/src/features/auth/data/repositories/seller_repository_impl.dart';
+import 'package:car_app_beta/core/connection/network_info.dart';
+import 'package:car_app_beta/src/core/service_locator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:data_connection_checker_tv/data_connection_checker.dart';
@@ -25,61 +26,53 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider extends ChangeNotifier {
+  UserModel? _user;
+  SellerModel? _seller;
+  SellerModel? _cSeller;
+  List<SellerModel> _allSellers = [];
   Response? res;
   Failure? failure;
-  UserModel? _user;
+  XFile? _image;
+  bool _hasImage = false;
+  bool _isSeller = false;
+  List<String> _currentFavorites = [];
 
-  UserModel? get user => _user;
   User? _firebaseUser;
 
-  User? get firebaseUser => FirebaseAuth.instance.currentUser;
-  XFile _image = XFile("path");
-  XFile get image => _image;
-
-  final String _imageName = "";
-  String get imageName => _imageName;
-
-  SellerModel? _seller;
-
+  UserModel? get user => _user;
   SellerModel? get seller => _seller;
-
-  bool _isSeller = false;
-  bool get isSeller => _isSeller;
-
-  SellerModel? _cSeller;
   SellerModel? get cSeller => _cSeller;
-
-  List<SellerModel>? _allSellers;
-  List<SellerModel>? get allSellers => _allSellers;
-
-  bool _hasImage = false;
+  List<SellerModel> get allSellers => _allSellers;
+  XFile? get image => _image;
   bool get hasImage => _hasImage;
-
-  List<String> _currentFavorites = [];
+  bool get isSeller => _isSeller;
   List<String> get currentFavorites => _currentFavorites;
+  User? get firebaseUser => _firebaseUser;
+
+  UserProvider() {
+    _firebaseUser = FirebaseAuth.instance.currentUser;
+  }
 
   Future<Either<Failure, Response>> eitherFailureOrUpdateSeller(
       {required AddSellerParams params}) async {
-    SellerRepositoryImpl repository = SellerRepositoryImpl(
-      remoteDataSource: SellerRemoteDataSourceImpl(dio: Dio()),
-      localDataSource: SellerLocalDataSourceImpl(
-        sharedPreferences: await SharedPreferences.getInstance(),
-      ),
-      networkInfo: NetworkInfoImpl(
-        DataConnectionChecker(),
-      ),
-    );
+    debugPrint("Starting seller update with params: ${params.data.toJson()}");
 
-    final failureOrAuth =
-        await AddSeller(authRepository: repository).call(params: params);
+    // Use the service locator to get the use case
+    final addSellerUseCase = getIt<AddSeller>();
+
+    final failureOrAuth = await addSellerUseCase.call(params: params);
 
     failureOrAuth.fold(
       (Failure newFailure) {
+        debugPrint("Seller update failed: ${newFailure.errorMessage}");
         res = null;
         failure = newFailure;
         notifyListeners();
       },
       (Response newAuth) {
+        debugPrint(
+            "Seller update successful: ${newAuth.statusCode} - ${newAuth.statusMessage}");
+        debugPrint("Response data: ${newAuth.data}");
         res = newAuth;
         failure = null;
         notifyListeners();
@@ -160,7 +153,9 @@ class UserProvider extends ChangeNotifier {
     });
 
     try {
-      Response response = await Dio().post(
+      // Use the Dio instance from service locator
+      final dio = getIt<Dio>();
+      Response response = await dio.post(
         "${Ac.baseUrl}/upload",
         data: formData,
         options: Options(
@@ -193,14 +188,10 @@ class UserProvider extends ChangeNotifier {
   void eitherFailureOrSeller({
     required String value,
   }) async {
-    SellerRepositoryImpl repository = SellerRepositoryImpl(
-      remoteDataSource: SellerRemoteDataSourceImpl(dio: Dio()),
-      localDataSource: SellerLocalDataSourceImpl(
-          sharedPreferences: await SharedPreferences.getInstance()),
-      networkInfo: NetworkInfoImpl(DataConnectionChecker()),
-    );
+    // Use the service locator to get the use case
+    final getSellerUseCase = getIt<GetSeller>();
 
-    final failureOrSeller = await GetSeller(authRepository: repository).call(
+    final failureOrSeller = await getSellerUseCase.call(
       params: GetSellerParams(id: value),
     );
 
@@ -222,15 +213,10 @@ class UserProvider extends ChangeNotifier {
   }
 
   void eitherFailureOrAllSellers() async {
-    SellerRepositoryImpl repository = SellerRepositoryImpl(
-      remoteDataSource: SellerRemoteDataSourceImpl(dio: Dio()),
-      localDataSource: SellerLocalDataSourceImpl(
-          sharedPreferences: await SharedPreferences.getInstance()),
-      networkInfo: NetworkInfoImpl(DataConnectionChecker()),
-    );
+    // Use the service locator to get the use case
+    final getAllSellersUseCase = getIt<GetAllSellers>();
 
-    final failureOrSeller =
-        await GetAllSellers(authRepository: repository).call();
+    final failureOrSeller = await getAllSellersUseCase.call();
 
     failureOrSeller.fold(
       (newFailure) {
@@ -253,18 +239,10 @@ class UserProvider extends ChangeNotifier {
 
   Future<Either<Failure, Response>> eitherFailureOrEditSeller(
       {required AddSellerParams params}) async {
-    SellerRepositoryImpl repository = SellerRepositoryImpl(
-      remoteDataSource: SellerRemoteDataSourceImpl(dio: Dio()),
-      localDataSource: SellerLocalDataSourceImpl(
-        sharedPreferences: await SharedPreferences.getInstance(),
-      ),
-      networkInfo: NetworkInfoImpl(
-        DataConnectionChecker(),
-      ),
-    );
+    // Use the service locator to get the use case
+    final editSellerUseCase = getIt<EditSeller>();
 
-    final failureOrEdit =
-        await EditSeller(authRepository: repository).call(params: params);
+    final failureOrEdit = await editSellerUseCase.call(params: params);
 
     failureOrEdit.fold(
       (Failure newFailure) {

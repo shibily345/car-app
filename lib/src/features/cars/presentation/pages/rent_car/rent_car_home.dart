@@ -1,5 +1,12 @@
+import 'package:car_app_beta/src/features/cars/presentation/widgets/rental_car_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import 'package:car_app_beta/src/features/cars/presentation/providers/cars_provider.dart';
+import 'package:car_app_beta/src/features/cars/business/entities/car_list_entity.dart';
+import 'package:car_app_beta/src/features/rental/presentation/providers/rental_provider.dart';
+import 'package:car_app_beta/src/features/rental/business/entities/rental_entity.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class RentCarHome extends StatefulWidget {
   const RentCarHome({super.key});
@@ -8,731 +15,910 @@ class RentCarHome extends StatefulWidget {
   State<RentCarHome> createState() => _RentCarHomeState();
 }
 
-class _RentCarHomeState extends State<RentCarHome> {
+class _RentCarHomeState extends State<RentCarHome>
+    with TickerProviderStateMixin {
+  late AnimationController _filterController;
+  late AnimationController _sortController;
+
   final TextEditingController _searchController = TextEditingController();
-  int _currentAdIndex = 0;
-  final PageController _adPageController = PageController();
+  final FocusNode _searchFocusNode = FocusNode();
 
-  // Dummy data for ads
-  final List<Map<String, dynamic>> _ads = [
-    {
-      'title': 'Summer Special',
-      'subtitle': 'Get 20% off on all rentals',
-      'image':
-          'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400',
-      'color': Colors.orange,
-    },
-    {
-      'title': 'Weekend Getaway',
-      'subtitle': 'Free upgrade on luxury cars',
-      'image':
-          'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400',
-      'color': Colors.blue,
-    },
-    {
-      'title': 'Business Travel',
-      'subtitle': 'Corporate rates available',
-      'image':
-          'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400',
-      'color': Colors.green,
-    },
-  ];
+  String _searchQuery = '';
+  bool _isFilterExpanded = false;
+  bool _isSortExpanded = false;
 
-  // Dummy data for recommended cars
-  final List<Map<String, dynamic>> _recommendedCars = [
-    {
-      'name': 'Toyota Camry',
-      'type': 'Sedan',
-      'price': '\$45/day',
-      'rating': 4.8,
-      'image':
-          'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=300',
-      'features': ['Automatic', 'AC', 'Bluetooth'],
-    },
-    {
-      'name': 'Honda CR-V',
-      'type': 'SUV',
-      'price': '\$65/day',
-      'rating': 4.6,
-      'image':
-          'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=300',
-      'features': ['AWD', 'Spacious', 'Fuel Efficient'],
-    },
-    {
-      'name': 'BMW 3 Series',
-      'type': 'Luxury',
-      'price': '\$120/day',
-      'rating': 4.9,
-      'image':
-          'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=300',
-      'features': ['Premium', 'Navigation', 'Leather'],
-    },
-    {
-      'name': 'Ford Mustang',
-      'type': 'Sports',
-      'price': '\$95/day',
-      'rating': 4.7,
-      'image':
-          'https://images.unsplash.com/photo-1582639510494-c80b5de9f148?w=300',
-      'features': ['Convertible', 'V8 Engine', 'Sport Mode'],
-    },
-  ];
+  // Filter states
+  String _selectedRentalType = 'All';
+  String _selectedSort = 'Newest';
+  String? _selectedMake;
 
-  // Dummy data for categories
-  final List<Map<String, dynamic>> _categories = [
-    {'name': 'Economy', 'icon': Icons.attach_money, 'color': Colors.green},
-    {'name': 'SUV', 'icon': Icons.directions_car, 'color': Colors.blue},
-    {'name': 'Luxury', 'icon': Icons.star, 'color': Colors.amber},
-    {'name': 'Sports', 'icon': Icons.speed, 'color': Colors.red},
-    {'name': 'Van', 'icon': Icons.airport_shuttle, 'color': Colors.purple},
+  // Available options
+  final List<String> _rentalTypes = [
+    'All',
+    'Daily',
+    'Weekly',
+    'Monthly',
+    'Hourly'
   ];
+  final List<String> _sortOptions = ['Newest', 'Price ↑', 'Price ↓'];
 
   @override
   void initState() {
     super.initState();
-    _startAdTimer();
-  }
+    _filterController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _sortController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
 
-  void _startAdTimer() {
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _currentAdIndex = (_currentAdIndex + 1) % _ads.length;
-        });
-        _adPageController.animateToPage(
-          _currentAdIndex,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-        _startAdTimer();
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CarsProvider>(context, listen: false).eitherFailureOrCars();
+      Provider.of<RentalProvider>(context, listen: false).getAllRentals();
+    });
+
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
     });
   }
 
-  void _sendEmail() async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: 'support@carapp.com',
-      query: 'subject=Suggestion for Rent a Car Feature&body=Hi Team,',
-    );
+  @override
+  void dispose() {
+    _filterController.dispose();
+    _sortController.dispose();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
-    if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
+  void _toggleFilters() {
+    setState(() {
+      // Close sort panel if it's open
+      if (_isSortExpanded) {
+        _isSortExpanded = false;
+        _sortController.reverse();
+      }
+      // Toggle filter panel
+      _isFilterExpanded = !_isFilterExpanded;
+    });
+    if (_isFilterExpanded) {
+      _filterController.forward();
     } else {
-      throw 'Could not launch $emailUri';
+      _filterController.reverse();
     }
+  }
+
+  void _toggleSort() {
+    setState(() {
+      // Close filter panel if it's open
+      if (_isFilterExpanded) {
+        _isFilterExpanded = false;
+        _filterController.reverse();
+      }
+      // Toggle sort panel
+      _isSortExpanded = !_isSortExpanded;
+    });
+    if (_isSortExpanded) {
+      _sortController.forward();
+    } else {
+      _sortController.reverse();
+    }
+  }
+
+  void _clearAllFilters() {
+    setState(() {
+      _selectedRentalType = 'All';
+      _selectedSort = 'Newest';
+      _selectedMake = null;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Rent a Car',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Section
-            _buildSearchSection(),
+      backgroundColor: theme.colorScheme.surface,
+      body: Consumer2<CarsProvider, RentalProvider>(
+        builder: (context, carsProvider, rentalProvider, _) {
+          if (carsProvider.cars == null ||
+              rentalProvider.allRentalsState == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            // Ad Slider
-            _buildAdSlider(),
+          final rentCars =
+              carsProvider.cars!.where((car) => car.isForRent == true).toList();
+          final filteredCars = _applySearch(rentCars);
+          final rentals = rentalProvider.allRentalsState?.data ?? [];
+          final makes = rentCars
+              .map((car) => car.make)
+              .where((make) => make != null && make.isNotEmpty)
+              .toSet()
+              .toList();
 
-            // Categories
-            _buildCategories(),
-
-            // Recommended Cars
-            _buildRecommendedCars(),
-
-            // Quick Actions
-            _buildQuickActions(),
-
-            // Popular Locations
-            _buildPopularLocations(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Find Your Perfect Ride',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Where would you like to go?',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 5,
+          if (filteredCars.isEmpty) {
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(
+                  'Rent a Car',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20.sp,
+                  ),
                 ),
-              ],
-            ),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search for cars, locations...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.filter_list),
-                  onPressed: () {},
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.white,
+                backgroundColor: theme.colorScheme.surface,
+                elevation: 0,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.car_rental,
+                        size: 64.sp,
+                        color: theme.colorScheme.onSurface.withOpacity(0.3)),
+                    SizedBox(height: 16.h),
+                    Text('No rental cars found',
+                        style: TextStyle(
+                            fontSize: 18.sp,
+                            color:
+                                theme.colorScheme.onSurface.withOpacity(0.6))),
+                    SizedBox(height: 8.h),
+                    Text('Try adjusting your search',
+                        style: TextStyle(
+                            fontSize: 14.sp,
+                            color:
+                                theme.colorScheme.onSurface.withOpacity(0.4))),
+                  ],
+                ),
+              ),
+            );
+          }
 
-  Widget _buildAdSlider() {
-    return Container(
-      height: 200,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: PageView.builder(
-        controller: _adPageController,
-        itemCount: _ads.length,
-        onPageChanged: (index) {
-          setState(() {
-            _currentAdIndex = index;
+          // Apply rental type filter
+          List<CarEntity> carsToShow = filteredCars.where((car) {
+            if (_selectedRentalType == 'All') return true;
+            final rental = rentals.where((r) => r.carId == car.id).isNotEmpty
+                ? rentals.firstWhere((r) => r.carId == car.id)
+                : null;
+            if (rental == null) return false;
+            return rental.rentalType.toLowerCase() ==
+                _selectedRentalType.toLowerCase();
+          }).toList();
+
+          // Apply make filter
+          if (_selectedMake != null && _selectedMake!.isNotEmpty) {
+            carsToShow =
+                carsToShow.where((car) => car.make == _selectedMake).toList();
+          }
+
+          // Apply sorting
+          carsToShow.sort((a, b) {
+            final rentalA = rentals.where((r) => r.carId == a.id).isNotEmpty
+                ? rentals.firstWhere((r) => r.carId == a.id)
+                : null;
+            final rentalB = rentals.where((r) => r.carId == b.id).isNotEmpty
+                ? rentals.firstWhere((r) => r.carId == b.id)
+                : null;
+            switch (_selectedSort) {
+              case 'Price ↑':
+                final priceA =
+                    _getPriceForRentalType(rentalA, _selectedRentalType) ??
+                        a.price ??
+                        0;
+                final priceB =
+                    _getPriceForRentalType(rentalB, _selectedRentalType) ??
+                        b.price ??
+                        0;
+                return priceA.compareTo(priceB);
+              case 'Price ↓':
+                final priceA =
+                    _getPriceForRentalType(rentalA, _selectedRentalType) ??
+                        a.price ??
+                        0;
+                final priceB =
+                    _getPriceForRentalType(rentalB, _selectedRentalType) ??
+                        b.price ??
+                        0;
+                return priceB.compareTo(priceA);
+              case 'Newest':
+              default:
+                return (b.updatedAt ?? DateTime(1970))
+                    .compareTo(a.updatedAt ?? DateTime(1970));
+            }
           });
-        },
-        itemBuilder: (context, index) {
-          final ad = _ads[index];
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  ad['color'],
-                  ad['color'].withOpacity(0.7),
-                ],
-              ),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  right: -20,
-                  bottom: -20,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        ad['title'],
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        ad['subtitle'],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: ad['color'],
-                        ),
-                        child: const Text('Learn More'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+
+          return CustomScrollView(
+            slivers: [
+              // Custom App Bar with Search
+              _buildSliverAppBar(theme, size),
+
+              // Filter and Sort Controls
+              _buildFilterSortControls(theme, makes),
+
+              // Results Count
+              _buildResultsCount(carsToShow.length, theme),
+
+              // Search Results
+              _buildSearchResults(theme, carsToShow, rentals),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildCategories() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Car Categories',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+  Widget _buildSliverAppBar(ThemeData theme, Size size) {
+    return SliverAppBar(
+      expandedHeight: 120.h,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: theme.colorScheme.surface,
+      title: Text(
+        'Rent a Car',
+        style: TextStyle(
+          color: theme.colorScheme.onSurface,
+          fontWeight: FontWeight.bold,
+          fontSize: 20.sp,
+        ),
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                theme.colorScheme.primary.withValues(alpha: 0.1),
+                theme.colorScheme.surface,
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                final category = _categories[index];
-                return Container(
-                  width: 80,
-                  margin: const EdgeInsets.only(right: 16),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: category['color'].withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          category['icon'],
-                          color: category['color'],
-                          size: 30,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        category['name'],
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+        ),
+      ),
+      bottom: PreferredSize(
+        preferredSize: Size.fromHeight(80.h),
+        child: _buildSearchBar(theme),
       ),
     );
   }
 
-  Widget _buildRecommendedCars() {
+  Widget _buildSearchBar(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Recommended Cars',
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        height: 60.h,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(30.r),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                focusNode: _searchFocusNode,
+                decoration: InputDecoration(
+                  hintText: 'Search for cars by make, model, or features...',
+                  hintStyle: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontSize: 16.sp,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: theme.colorScheme.primary,
+                    size: 24.sp,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 15.h,
+                  ),
+                ),
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: const Text('View All'),
+            ),
+            if (_searchQuery.isNotEmpty)
+              IconButton(
+                onPressed: () {
+                  _searchController.clear();
+                },
+                icon: Icon(
+                  Icons.clear,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 280,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _recommendedCars.length,
-              itemBuilder: (context, index) {
-                final car = _recommendedCars[index];
-                return Container(
-                  width: 220,
-                  margin: const EdgeInsets.only(right: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 1,
-                        blurRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16),
-                        ),
-                        child: Image.network(
-                          car['image'],
-                          height: 120,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    car['name'],
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.star,
-                                      size: 16,
-                                      color: Colors.amber,
-                                    ),
-                                    Text(
-                                      car['rating'].toString(),
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              car['type'],
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                ...car['features'].map((feature) => Container(
-                                      margin: const EdgeInsets.only(right: 4),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        feature,
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          color: Colors.blue,
-                                        ),
-                                      ),
-                                    )),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  car['price'],
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Text('Rent Now'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+          ],
+        ),
+      ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.3, end: 0),
+    );
+  }
+
+  Widget _buildFilterSortControls(ThemeData theme, List<String?> makes) {
+    return SliverToBoxAdapter(
+      child: Column(
+        children: [
+          // Filter and Sort Buttons
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildFilterButton(theme),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: _buildSortButton(theme),
+                ),
+                SizedBox(width: 10.w),
+                _buildClearButton(theme),
+              ],
             ),
           ),
+
+          // Filter Panel
+          _buildFilterPanel(theme, makes),
+
+          // Sort Panel
+          _buildSortPanel(theme),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActions() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Quick Actions',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+  Widget _buildFilterButton(ThemeData theme) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _toggleFilters,
+        borderRadius: BorderRadius.circular(25.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 20.w),
+          decoration: BoxDecoration(
+            color: _isFilterExpanded
+                ? theme.colorScheme.primary
+                : theme.colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(25.r),
+            border: Border.all(
+              color: theme.colorScheme.primary.withValues(alpha: 0.3),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: _buildQuickActionCard(
-                  icon: Icons.history,
-                  title: 'Recent Rentals',
-                  subtitle: 'View your history',
-                  color: Colors.blue,
-                ),
+              Icon(
+                Icons.filter_list,
+                color: _isFilterExpanded
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.primary,
+                size: 20.sp,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildQuickActionCard(
-                  icon: Icons.favorite,
-                  title: 'Favorites',
-                  subtitle: 'Saved cars',
-                  color: Colors.red,
+              SizedBox(width: 8.w),
+              Text(
+                'Filters',
+                style: TextStyle(
+                  color: _isFilterExpanded
+                      ? theme.colorScheme.onPrimary
+                      : theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14.sp,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildQuickActionCard(
-                  icon: Icons.support_agent,
-                  title: 'Support',
-                  subtitle: 'Get help',
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildQuickActionCard(
-                  icon: Icons.settings,
-                  title: 'Settings',
-                  subtitle: 'Preferences',
-                  color: Colors.purple,
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
-    );
+    ).animate().fadeIn(delay: 100.ms);
   }
 
-  Widget _buildQuickActionCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
+  Widget _buildSortButton(ThemeData theme) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _toggleSort,
+        borderRadius: BorderRadius.circular(25.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 20.w),
+          decoration: BoxDecoration(
+            color: _isSortExpanded
+                ? theme.colorScheme.primary
+                : theme.colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(25.r),
+            border: Border.all(
+              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            ),
           ),
-        ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.sort,
+                color: _isSortExpanded
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.primary,
+                size: 20.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Sort',
+                style: TextStyle(
+                  color: _isSortExpanded
+                      ? theme.colorScheme.onPrimary
+                      : theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
+    ).animate().fadeIn(delay: 200.ms);
+  }
+
+  Widget _buildClearButton(ThemeData theme) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _clearAllFilters,
+        borderRadius: BorderRadius.circular(25.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.error.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(25.r),
+            border: Border.all(
+              color: theme.colorScheme.error.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Icon(
+            Icons.clear_all,
+            color: theme.colorScheme.error,
+            size: 20.sp,
+          ),
+        ),
+      ),
+    ).animate().fadeIn(delay: 300.ms);
+  }
+
+  Widget _buildFilterPanel(ThemeData theme, List<String?> makes) {
+    return AnimatedBuilder(
+      animation: _filterController,
+      builder: (context, child) {
+        return SizeTransition(
+          sizeFactor: _filterController,
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+            padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Filters',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Rental Type Filter
+                _buildRentalTypeFilter(theme),
+                SizedBox(height: 20.h),
+
+                // Make Filter
+                _buildMakeFilter(theme, makes),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildPopularLocations() {
-    final locations = [
-      {'name': 'Downtown', 'cars': '45 cars available'},
-      {'name': 'Airport', 'cars': '32 cars available'},
-      {'name': 'Shopping Mall', 'cars': '28 cars available'},
-      {'name': 'University', 'cars': '15 cars available'},
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Popular Pickup Locations',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+  Widget _buildRentalTypeFilter(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Rental Type',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        DropdownButtonFormField<String>(
+          value: _selectedRentalType,
+          decoration: InputDecoration(
+            labelText: 'Select Rental Type',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 12.h,
             ),
           ),
-          const SizedBox(height: 16),
-          ...locations.map((location) => Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
+          items: _rentalTypes
+              .map((type) => DropdownMenuItem<String>(
+                    value: type,
+                    child: Text(type),
+                  ))
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedRentalType = value!;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMakeFilter(ThemeData theme, List<String?> makes) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Car Make',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<String?>(
+                value: _selectedMake,
+                decoration: InputDecoration(
+                  labelText: 'Select Make',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
+                ),
+                items: [
+                  const DropdownMenuItem<String?>(
+                    value: null,
+                    child: Text('All Makes'),
+                  ),
+                  ...makes.map((make) => DropdownMenuItem<String?>(
+                        value: make,
+                        child: Text(make ?? ''),
+                      )),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedMake = value;
+                  });
+                },
+              ),
+            ),
+            if (_selectedMake != null) ...[
+              SizedBox(width: 10.w),
+              Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                    ),
-                  ],
+                  color: theme.colorScheme.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: theme.colorScheme.error.withValues(alpha: 0.3),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        _selectedMake = null;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        vertical: 12.h,
+                        horizontal: 16.w,
                       ),
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            location['name'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            location['cars'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+                      child: Icon(
+                        Icons.clear,
+                        color: theme.colorScheme.error,
+                        size: 20.sp,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.arrow_forward_ios),
-                      onPressed: () {},
-                    ),
-                  ],
+                  ),
                 ),
-              )),
-        ],
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSortPanel(ThemeData theme) {
+    return AnimatedBuilder(
+      animation: _sortController,
+      builder: (context, child) {
+        return SizeTransition(
+          sizeFactor: _sortController,
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sort By',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                SizedBox(height: 15.h),
+                ..._sortOptions
+                    .map((option) => _buildSortOption(theme, option)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOption(ThemeData theme, String option) {
+    final isSelected = _selectedSort == option;
+    final icon = _getSortOptionIcon(option);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedSort = option;
+          });
+        },
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+          margin: EdgeInsets.only(bottom: 8.h),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                size: 20.sp,
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  option,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  color: theme.colorScheme.primary,
+                  size: 20.sp,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _adPageController.dispose();
-    super.dispose();
+  IconData _getSortOptionIcon(String option) {
+    switch (option) {
+      case 'Newest':
+        return Icons.schedule;
+      case 'Price ↑':
+        return Icons.arrow_upward;
+      case 'Price ↓':
+        return Icons.arrow_downward;
+      default:
+        return Icons.sort;
+    }
+  }
+
+  Widget _buildResultsCount(int count, ThemeData theme) {
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        child: Row(
+          children: [
+            Icon(
+              Icons.car_rental,
+              size: 16.sp,
+              color: theme.colorScheme.primary,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              '$count rental car${count != 1 ? 's' : ''} found',
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults(
+      ThemeData theme, List<CarEntity> carsToShow, List<RentalEntity> rentals) {
+    if (carsToShow.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.car_rental,
+                size: 64.sp,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'No cars found',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Try adjusting your filters',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final car = carsToShow[index];
+          final rental = rentals.where((r) => r.carId == car.id).isNotEmpty
+              ? rentals.firstWhere((r) => r.carId == car.id)
+              : null;
+          return RentalCarTile(
+            car: car,
+            rental: rental,
+            index: index,
+            selectedRentalType: _selectedRentalType,
+          );
+        },
+        childCount: carsToShow.length,
+      ),
+    );
+  }
+
+  double? _getPriceForRentalType(
+      RentalEntity? rental, String? selectedRentalType) {
+    if (rental == null) return null;
+
+    if (selectedRentalType != null && selectedRentalType != 'All') {
+      // Use the selected rental type from filter
+      switch (selectedRentalType.toLowerCase()) {
+        case 'hourly':
+          return rental.pricing.hourly;
+        case 'daily':
+          return rental.pricing.daily;
+        case 'weekly':
+          return rental.pricing.weekly;
+        case 'monthly':
+          return rental.pricing.monthly;
+      }
+    } else {
+      // When "All" is selected, use the actual rental type of the car
+      switch (rental.rentalType.toLowerCase()) {
+        case 'hourly':
+          return rental.pricing.hourly;
+        case 'daily':
+          return rental.pricing.daily;
+        case 'weekly':
+          return rental.pricing.weekly;
+        case 'monthly':
+          return rental.pricing.monthly;
+        default:
+          // Fallback to original logic if rental type is not recognized
+          return rental.pricing.daily ??
+              rental.pricing.hourly ??
+              rental.pricing.weekly ??
+              rental.pricing.monthly;
+      }
+    }
+
+    return null;
+  }
+
+  List<CarEntity> _applySearch(List<CarEntity> cars) {
+    if (_searchQuery.isEmpty) return cars;
+    final query = _searchQuery.toLowerCase();
+    return cars.where((car) {
+      final title = car.title?.toLowerCase() ?? '';
+      final make = car.make?.toLowerCase() ?? '';
+      final model = car.model?.toLowerCase() ?? '';
+      final description = car.description?.toLowerCase() ?? '';
+      return title.contains(query) ||
+          make.contains(query) ||
+          model.contains(query) ||
+          description.contains(query);
+    }).toList();
   }
 }
